@@ -1,0 +1,11 @@
+#d3-module-focus, #d3-module-context {
+    border: 1px solid;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+#d3-module-container {
+    display: flex;
+}
