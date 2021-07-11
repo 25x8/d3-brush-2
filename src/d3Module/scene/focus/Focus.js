@@ -20,7 +20,8 @@ export class Focus extends Scene {
 
         renderElements({
             scene: this.scene,
-            data: this.markersData
+            data: this.markersData,
+            y: this.yAxis.y
         });
     }
 
@@ -30,7 +31,8 @@ export class Focus extends Scene {
         this.resizeScene({width, height});
         renderElements({
             scene: this.scene,
-            markersData: this.markersData
+            markersData: this.markersData,
+            y: this.yAxis.y
         });
     }
 
@@ -39,7 +41,8 @@ export class Focus extends Scene {
         this.#createMarkerClusters(data, totalLength);
         renderElements({
             scene: this.scene,
-            markersData: this.markersData
+            markersData: this.markersData,
+            y: this.yAxis.y
         });
     }
 
@@ -89,10 +92,9 @@ export class Focus extends Scene {
                 nextItem.position = partLength * i ;
                 clusters.push(nextItem);
             }
+            this.markersData = clusters;
         } else {
             this.markersData = data;
         }
-
-        this.markersData = clusters;
     }
 }

@@ -8,7 +8,7 @@ export class Context extends Scene {
 
     elementsData;
     visibleElements;
-    bisect = d3.bisector(d => d.position + d.height)
+    bisect = d3.bisector(d => d.position)
 
     constructor(container) {
         super(container);
@@ -89,17 +89,14 @@ export class Context extends Scene {
             .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
             .attr('y', d => this.yAxis.y(d.position))
 
-        //
-        // update.select('path')
-        //     .attr('2', d => {
-        //         console.log(d.id)
-        //     });
     }
 
     #getElementFromRange(boundaries) {
 
-        const leftPos = this.bisect.left(this.elementsData, boundaries[0]);
+        let leftPos = this.bisect.center(this.elementsData, boundaries[0]);
         const rightPos = this.bisect.right(this.elementsData, boundaries[1]);
+
+        leftPos > 0 && (leftPos -= 1)
 
         if (leftPos === rightPos) {
             this.visibleElements = this.elementsData[leftPos - 1];
@@ -107,7 +104,6 @@ export class Context extends Scene {
             this.visibleElements = this.elementsData.slice(leftPos, rightPos);
         }
 
-        this.visibleElements.forEach(el => el.height)
 
     }
 
