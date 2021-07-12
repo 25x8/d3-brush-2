@@ -98,6 +98,12 @@ export class Focus extends Scene {
     }
 
 
+    changeFocusArea = (boundaries) => {
+        this.brushSystem.brushArea
+            .transition()
+            .call(this.brushSystem.brushArea.move, boundaries);
+    }
+
     #createMarkerClusters(data, totalLength) {
 
         const clusters = [];

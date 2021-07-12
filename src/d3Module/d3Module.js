@@ -99,6 +99,7 @@ export class D3Module {
 
     #linkScenes() {
         this.focus.externalEvent = this.context.changeViewArea;
+        this.context.externalEvent = this.focus.changeFocusArea
     }
 
 

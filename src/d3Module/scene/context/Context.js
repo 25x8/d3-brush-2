@@ -1,10 +1,11 @@
+import * as d3 from '../../utils/d3Lib';
 import {Scene} from "../Scene";
 import {YAxis} from "../../systems/yAxis";
 import {elementsConfig} from "../../utils/elementsConfig";
-import * as d3 from '../../utils/d3Lib';
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
-import {FocusMarker} from "../focus/FocusMarker";
+import {BrushSystem} from "../../systems/BrushSystem";
+
 
 export class Context extends Scene {
 
@@ -32,7 +33,7 @@ export class Context extends Scene {
         this.visibleElements = data;
 
         this.#initYAxis(boundaries);
-        this.#initBrush()
+        this.#initBrush();
         this.#initRenderFunction();
 
         this.render();
@@ -47,7 +48,17 @@ export class Context extends Scene {
     }
 
     #initBrush() {
-
+        this.brushSystem = new BrushSystem({
+            svg: this.svg,
+            onBrush: (e) => {
+                this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
+            },
+            onBrushEnd: ({selection}) => {
+                if (!selection) {
+                    this.brushSystem.brush.call(this.brushSystem.brushArea.move, this.brushSystem.defaultSelection);
+                }
+            }
+        })
     }
 
     #initRenderFunction() {
