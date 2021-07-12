@@ -37,7 +37,7 @@ export class YAxis {
             .call(d3.axisLeft(this.y));
     }
 
-    getStartPostion() {
+    getStartPosition() {
         return this.y.domain()[1];
     }
 }

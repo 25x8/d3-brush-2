@@ -3,12 +3,15 @@ import {YAxis} from "../../systems/yAxis";
 import {elementsConfig} from "../../utils/elementsConfig";
 import * as d3 from '../../utils/d3Lib';
 import {getColor} from "../../../interpolateColor";
+import {RenderSystem} from "../../systems/RenderSystem";
+import {FocusMarker} from "../focus/FocusMarker";
 
 export class Context extends Scene {
 
     elementsData;
     visibleElements;
-    bisect = d3.bisector(d => d.position)
+    bisect = d3.bisector(d => d.position);
+
 
     constructor(container) {
         super(container);
@@ -25,71 +28,80 @@ export class Context extends Scene {
 
     init({boundaries, data}) {
 
+        this.elementsData = data;
+        this.visibleElements = data;
+
+        this.#initYAxis(boundaries);
+        this.#initBrush()
+        this.#initRenderFunction();
+
+        this.render();
+    }
+
+    #initYAxis(boundaries) {
         this.yAxis = new YAxis({
             svg: this.svg,
             startLength: boundaries[0],
             endLength: boundaries[1]
         });
+    }
 
-        this.elementsData = data;
-        this.visibleElements = data;
+    #initBrush() {
 
-        this.#renderElements();
+    }
+
+    #initRenderFunction() {
+        const renderSystem = new RenderSystem({
+            y: this.yAxis.y,
+            scene: this.scene,
+            selector: 'd3-module-context-element'
+        });
+
+        renderSystem.initRenderFunctions({
+            enter: (enter) => {
+
+                const startAxisPosition = this.yAxis.getStartPosition();
+
+                const svgImage = enter.append('svg')
+                    .attr('viewBox', d => {
+                        const els = elementsConfig.find(el => el.id === d.type);
+                        if (els) {
+                            return els.viewBox
+                        }
+                    })
+                    .attr('class', renderSystem.selector)
+                    .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
+                    .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
+                    .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
+                    .attr('y', d => this.yAxis.y(d.position))
+                    .attr('fill', (d, index) => getColor(index))
+                    .attr('stroke', 'black');
+
+                svgImage.append('use')
+                    .attr('href', d => {
+                        if (d.type !== 'k')
+                            return `#${d.type}`
+                    });
+            },
+            update: (update) => {
+                const startAxisPosition = this.yAxis.getStartPosition();
+                update
+                    .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
+                    .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
+                    .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
+                    .attr('y', d => this.yAxis.y(d.position))
+            }
+        });
+
+        this.render = () => renderSystem.renderElements(this.visibleElements);
     }
 
     changeViewArea = (boundaries) => {
-
         this.yAxis.updateY(boundaries[1], boundaries[0]);
         this.#getElementFromRange(boundaries);
-        this.#renderElements();
+        this.render();
     }
 
-    #renderElements() {
-        this.scene.selectAll('.d3-module-context-element')
-            .data(this.visibleElements, d => d.id)
-            .join(
-                enter => this.#appendElements(enter),
-                update => this.#updateElements(update),
-                exit => exit.remove()
-            )
-    }
-
-    #appendElements(enter) {
-
-        const startAxisPosition = this.yAxis.getStartPostion();
-        const svgImage = enter.append('svg')
-            .attr('viewBox', d => {
-                const els = elementsConfig.find(el => el.id === d.type);
-                if (els) {
-                    return els.viewBox
-                }
-            })
-            .attr('class', 'd3-module-context-element')
-            .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
-            .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
-            .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
-            .attr('y', d => this.yAxis.y(d.position))
-            .attr('fill', (d, index) => getColor(index))
-            .attr('stroke', 'black');
-
-        svgImage.append('use')
-            .attr('href', d => {
-                if (d.type !== 'k')
-                    return `#${d.type}`
-            });
-    }
-
-    #updateElements(update) {
-        const startAxisPosition = this.yAxis.getStartPostion();
-        update
-            .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
-            .attr('height', d =>  {
-                return this.yAxis.y(d.height + startAxisPosition)
-            })
-            .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
-            .attr('y', d => this.yAxis.y(d.position))
-
-    }
 
     #getElementFromRange(boundaries) {
 
@@ -103,7 +115,6 @@ export class Context extends Scene {
         } else {
             this.visibleElements = this.elementsData.slice(leftPos, rightPos);
         }
-
 
     }
 

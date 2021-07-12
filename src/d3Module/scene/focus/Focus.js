@@ -1,13 +1,15 @@
 import {Scene} from "../Scene";
 import {BrushSystem} from "../../systems/BrushSystem";
 import {YAxis} from "../../systems/yAxis";
-import {renderElements} from "./FocusElements";
 import {getColor} from "../../../interpolateColor";
+import {RenderSystem} from "../../systems/RenderSystem";
+import {FocusMarker} from "./FocusMarker";
 
 export class Focus extends Scene {
 
     PARTS_NUMBER = 20;
     markersData;
+
 
     constructor(container) {
         super(container);
@@ -17,33 +19,53 @@ export class Focus extends Scene {
         this.#initYAxis(totalLength);
         this.#initBrush(totalLength);
         this.#createMarkerClusters(data, totalLength);
+        this.#initRenderFunction();
+        this.render();
+    }
 
-        renderElements({
+    #initRenderFunction() {
+        const renderSystem = new RenderSystem({
+            y: this.yAxis.y,
             scene: this.scene,
-            data: this.markersData,
-            y: this.yAxis.y
+            selector: 'd3-module-focus-marker'
         });
+
+        renderSystem.initRenderFunctions({
+            enter: (enter) => {
+
+                const g = enter.append('g')
+                    .attr('class', renderSystem.selector);
+
+                g.append('path')
+                    .attr('d', d => {
+                        return FocusMarker.createLinePath(25, d.position, d.height, renderSystem.y);
+                    })
+                    .attr('stroke', '#b47e94')
+                    .attr('fill', (d, index) => getColor(index));
+
+            },
+            update: (update) => {
+                update.select('path')
+                    .attr('d', d => {
+                        return FocusMarker.createLinePath(25, d.position, d.height, renderSystem.y);
+                    });
+            }
+        });
+
+        this.render = () => renderSystem.renderElements(this.markersData);
     }
 
     resize({width, height}) {
         this.yAxis.resize({height, delta: 10});
         this.brushSystem.resize({width, height, delta: 10});
         this.resizeScene({width, height});
-        renderElements({
-            scene: this.scene,
-            markersData: this.markersData,
-            y: this.yAxis.y
-        });
+        this.render();
     }
 
     updateMarkersData({totalLength, data}) {
         this.yAxis.update(totalLength);
         this.#createMarkerClusters(data, totalLength);
-        renderElements({
-            scene: this.scene,
-            markersData: this.markersData,
-            y: this.yAxis.y
-        });
+        this.render();
     }
 
 
@@ -61,35 +83,32 @@ export class Focus extends Scene {
         this.brushSystem = new BrushSystem({
             svg: this.svg,
             delta: 10,
-            onBrush: this.#onBrush,
-            onBrushEnd: this.#onBrushEnded
+            onBrush: (e) => {
+                this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
+            },
+            onBrushEnd: ({selection}) => {
+                if (!selection) {
+                    this.brushSystem.brush.call(this.brushSystem.brushArea.move, this.brushSystem.defaultSelection);
+                }
+            }
         })
 
         this.brushSystem.yConverter = this.yAxis.y;
         this.brushSystem.setDefaultSelection(0, startSelection)
     }
 
-    #onBrush = (e) => {
-      this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
-    }
-
-    #onBrushEnded = ({selection}) => {
-        if (!selection) {
-            this.brushSystem.brush.call(this.brushSystem.brushArea.move, this.brushSystem.defaultSelection);
-        }
-    }
 
     #createMarkerClusters(data, totalLength) {
 
         const clusters = [];
 
         if (data.length > this.PARTS_NUMBER) {
-            const partStep = data.length   / this.PARTS_NUMBER;
+            const partStep = data.length / this.PARTS_NUMBER;
             const partLength = totalLength / this.PARTS_NUMBER;
             for (let i = 0; i < this.PARTS_NUMBER; i++) {
                 const nextItem = data[Math.round(partStep * i)];
-                nextItem.height = partLength ;
-                nextItem.position = partLength * i ;
+                nextItem.height = partLength;
+                nextItem.position = partLength * i;
                 clusters.push(nextItem);
             }
             this.markersData = clusters;

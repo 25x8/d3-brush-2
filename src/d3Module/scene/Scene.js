@@ -9,6 +9,7 @@ export class Scene {
     yAxis;
     brushSystem;
     externalEvent;
+    render;
 
     constructor(container) {
         const {width, height} = container.getBoundingClientRect();
