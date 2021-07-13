@@ -99,9 +99,9 @@ export class Focus extends Scene {
 
 
     changeFocusArea = (boundaries) => {
-        this.brushSystem.brushArea
+        this.brushSystem.brush
             .transition()
-            .call(this.brushSystem.brushArea.move, boundaries);
+            .call(this.brushSystem.brushArea.move, boundaries.map(this.yAxis.y));
     }
 
     #createMarkerClusters(data, totalLength) {

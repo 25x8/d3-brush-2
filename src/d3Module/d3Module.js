@@ -20,8 +20,8 @@ export class D3Module {
     initScene({selector, width, height, data}) {
         this.#createHTMLScenes({selector, width, height});
         this.#createSVGScenes(data);
-        this.#initFocusBrush();
         this.#linkScenes();
+        this.#initFocusBrush();
     }
 
     resizeScene(size) {
@@ -98,7 +98,7 @@ export class D3Module {
     }
 
     #linkScenes() {
-        this.focus.externalEvent = this.context.changeViewArea;
+        this.focus.externalEvent = this.context.changeContextArea;
         this.context.externalEvent = this.focus.changeFocusArea
     }
 

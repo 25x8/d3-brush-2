@@ -8,7 +8,7 @@ export function createHTMLElement({name, width, height}) {
 
 export function calculateElementsPosition(data) {
     let totalLength = 0;
-    const mutatedData = data.map(el => {
+    const dataWithCalculatedPosition = data.map(el => {
         el.position = totalLength;
         totalLength += el.height;
         return el;
@@ -16,7 +16,7 @@ export function calculateElementsPosition(data) {
 
     return {
         totalLength,
-        data: mutatedData
+        data: dataWithCalculatedPosition
     }
 }
 

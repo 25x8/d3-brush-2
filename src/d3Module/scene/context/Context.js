@@ -16,15 +16,6 @@ export class Context extends Scene {
 
     constructor(container) {
         super(container);
-
-        const defs = this.svg.append('defs');
-
-        elementsConfig.forEach(({path, id}) => {
-            defs.append('path')
-                .attr('d', path)
-                .attr('id', id);
-        })
-
     }
 
     init({boundaries, data}) {
@@ -32,11 +23,22 @@ export class Context extends Scene {
         this.elementsData = data;
         this.visibleElements = data;
 
+        this.#appendElementsImages();
         this.#initYAxis(boundaries);
         this.#initBrush();
         this.#initRenderFunction();
 
         this.render();
+    }
+
+    #appendElementsImages() {
+        const defs = this.svg.append('defs');
+
+        elementsConfig.forEach(({path, id}) => {
+            defs.append('path')
+                .attr('d', path)
+                .attr('id', id);
+        })
     }
 
     #initYAxis(boundaries) {
@@ -50,12 +52,10 @@ export class Context extends Scene {
     #initBrush() {
         this.brushSystem = new BrushSystem({
             svg: this.svg,
-            onBrush: (e) => {
-                this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
-            },
             onBrushEnd: ({selection}) => {
-                if (!selection) {
-                    this.brushSystem.brush.call(this.brushSystem.brushArea.move, this.brushSystem.defaultSelection);
+                if(selection) {
+                    this.externalEvent && this.externalEvent(selection.map(this.yAxis.y.invert));
+                    this.brushSystem.brush.call(this.brushSystem.brushArea.clear);
                 }
             }
         })
@@ -107,7 +107,7 @@ export class Context extends Scene {
         this.render = () => renderSystem.renderElements(this.visibleElements);
     }
 
-    changeViewArea = (boundaries) => {
+    changeContextArea = (boundaries) => {
         this.yAxis.updateY(boundaries[1], boundaries[0]);
         this.#getElementFromRange(boundaries);
         this.render();
