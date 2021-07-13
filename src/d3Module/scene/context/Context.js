@@ -32,36 +32,41 @@ export class Context extends Scene {
     }
 
     #appendElementsImages() {
+
         const defs = this.svg.append('defs');
 
         elementsConfig.forEach(({path, id}) => {
             defs.append('path')
                 .attr('d', path)
                 .attr('id', id);
-        })
+        });
     }
 
     #initYAxis(boundaries) {
+
         this.yAxis = new YAxis({
             svg: this.svg,
-            startLength: boundaries[0],
-            endLength: boundaries[1]
+            startPosition: boundaries[0],
+            endPosition: boundaries[1]
         });
     }
 
     #initBrush() {
+
         this.brushSystem = new BrushSystem({
             svg: this.svg,
+            yConverter: this.yAxis.y,
             onBrushEnd: ({selection}) => {
                 if(selection) {
-                    this.externalEvent && this.externalEvent(selection.map(this.yAxis.y.invert));
+                    this.externalEvent && this.externalEvent(selection);
                     this.brushSystem.brush.call(this.brushSystem.brushArea.clear);
                 }
             }
-        })
+        });
     }
 
     #initRenderFunction() {
+
         const renderSystem = new RenderSystem({
             y: this.yAxis.y,
             scene: this.scene,
@@ -70,7 +75,6 @@ export class Context extends Scene {
 
         renderSystem.initRenderFunctions({
             enter: (enter) => {
-
                 const startAxisPosition = this.yAxis.getStartPosition();
 
                 const svgImage = enter.append('svg')
@@ -101,18 +105,18 @@ export class Context extends Scene {
                     .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
                     .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
                     .attr('y', d => this.yAxis.y(d.position))
-            }
+            },
         });
 
         this.render = () => renderSystem.renderElements(this.visibleElements);
     }
 
     changeContextArea = (boundaries) => {
+
         this.yAxis.updateY(boundaries[1], boundaries[0]);
         this.#getElementFromRange(boundaries);
         this.render();
     }
-
 
     #getElementFromRange(boundaries) {
 
@@ -126,8 +130,12 @@ export class Context extends Scene {
         } else {
             this.visibleElements = this.elementsData.slice(leftPos, rightPos);
         }
-
     }
 
+    updateData({data}) {
+        this.elementsData = data;
+        this.visibleElements = data;
+        this.render();
+    }
 
 }

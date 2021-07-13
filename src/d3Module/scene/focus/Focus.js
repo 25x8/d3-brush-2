@@ -10,20 +10,71 @@ export class Focus extends Scene {
     PARTS_NUMBER = 20;
     markersData;
 
-
     constructor(container) {
         super(container);
     }
 
     init({totalLength, data}) {
+
         this.#initYAxis(totalLength);
         this.#initBrush(totalLength);
         this.#createMarkerClusters(data, totalLength);
         this.#initRenderFunction();
+
         this.render();
     }
 
+    #initYAxis(endPosition) {
+
+        this.yAxis = new YAxis({
+            svg: this.svg,
+            endPosition,
+            delta: 10
+        });
+
+        this.yAxis.appendYline(this.width);
+    }
+
+    #initBrush(startSelection) {
+
+        this.brushSystem = new BrushSystem({
+            svg: this.svg,
+            delta: 10,
+            yConverter: this.yAxis.y,
+            onBrush: (e) => {
+                this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
+                this.brushSystem.setCurrentSelection(e.selection);
+            },
+            onBrushEnd: ({selection}) => {
+                if (!selection) {
+                    this.brushSystem.moveBrushToDefault();
+                }
+            }
+        })
+
+        this.brushSystem.setDefaultSelection([0, startSelection])
+    }
+
+    #createMarkerClusters(data, totalLength) {
+        const clusters = [];
+
+        if (data.length > this.PARTS_NUMBER) {
+            const partStep = data.length / this.PARTS_NUMBER;
+            const partLength = totalLength / this.PARTS_NUMBER;
+            for (let i = 0; i < this.PARTS_NUMBER; i++) {
+                const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
+                nextItem.height = partLength;
+                nextItem.position = partLength * i;
+                clusters.push(nextItem);
+            }
+            this.markersData = clusters;
+        } else {
+            this.markersData = data;
+        }
+    }
+
     #initRenderFunction() {
+
         const renderSystem = new RenderSystem({
             y: this.yAxis.y,
             scene: this.scene,
@@ -32,7 +83,6 @@ export class Focus extends Scene {
 
         renderSystem.initRenderFunctions({
             enter: (enter) => {
-
                 const g = enter.append('g')
                     .attr('class', renderSystem.selector);
 
@@ -55,71 +105,18 @@ export class Focus extends Scene {
         this.render = () => renderSystem.renderElements(this.markersData);
     }
 
-    resize({width, height}) {
-        this.yAxis.resize({height, delta: 10});
-        this.brushSystem.resize({width, height, delta: 10});
-        this.resizeScene({width, height});
-        this.render();
-    }
 
     updateMarkersData({totalLength, data}) {
+
         this.yAxis.update(totalLength);
         this.#createMarkerClusters(data, totalLength);
         this.render();
+        this.brushSystem.moveBrush();
     }
-
-
-    #initYAxis(endLength) {
-        this.yAxis = new YAxis({
-            svg: this.svg,
-            endLength,
-            delta: 10
-        });
-
-        this.yAxis.appendYline(this.width);
-    }
-
-    #initBrush(startSelection) {
-        this.brushSystem = new BrushSystem({
-            svg: this.svg,
-            delta: 10,
-            onBrush: (e) => {
-                this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
-            },
-            onBrushEnd: ({selection}) => {
-                if (!selection) {
-                    this.brushSystem.brush.call(this.brushSystem.brushArea.move, this.brushSystem.defaultSelection);
-                }
-            }
-        })
-
-        this.brushSystem.yConverter = this.yAxis.y;
-        this.brushSystem.setDefaultSelection(0, startSelection)
-    }
-
 
     changeFocusArea = (boundaries) => {
-        this.brushSystem.brush
-            .transition()
-            .call(this.brushSystem.brushArea.move, boundaries.map(this.yAxis.y));
+        this.brushSystem.moveBrush(boundaries);
     }
 
-    #createMarkerClusters(data, totalLength) {
 
-        const clusters = [];
-
-        if (data.length > this.PARTS_NUMBER) {
-            const partStep = data.length / this.PARTS_NUMBER;
-            const partLength = totalLength / this.PARTS_NUMBER;
-            for (let i = 0; i < this.PARTS_NUMBER; i++) {
-                const nextItem = data[Math.round(partStep * i)];
-                nextItem.height = partLength;
-                nextItem.position = partLength * i;
-                clusters.push(nextItem);
-            }
-            this.markersData = clusters;
-        } else {
-            this.markersData = data;
-        }
-    }
 }

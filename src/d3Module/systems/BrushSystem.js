@@ -6,8 +6,9 @@ export class BrushSystem {
     brush;
     defaultSelection;
     yConverter;
+    currentBoundaries;
 
-    constructor({svg, delta=0, onBrush, onBrushEnd}) {
+    constructor({svg, delta = 0, yConverter, onBrush, onBrushEnd}) {
 
         const width = svg.attr('width');
         const height = svg.attr('height');
@@ -23,18 +24,44 @@ export class BrushSystem {
             .append('g')
             .attr('class', 'd3-module-brush')
             .call(this.brushArea);
+
+        this.yConverter = yConverter;
     }
 
-    setDefaultSelection(yTop, yDown) {
-        this.defaultSelection = [this.yConverter(yTop), this.yConverter(yDown)]
+    resize({width, height, delta = 0}) {
+
+        this.defaultSelection = [delta, height - delta];
+        this.brushArea.extent([[0, delta], [width, height - delta]]);
+        this.brush.call(this.brushArea);
+    }
+
+    moveBrush(boundaries) {
+
+        boundaries && this.setCurrentSelection(boundaries);
+        this.brush
+            .transition()
+            .call(this.brushArea.move, this.getCurrentSelection());
+    }
+
+    moveBrushToDefault() {
+        this.brush
+            .call(this.brushArea.move, this.getDefaultSelection());
+    }
+
+    setCurrentSelection(boundaries) {
+        this.currentBoundaries = boundaries.map(this.yConverter.invert);
+    }
+
+    getCurrentSelection() {
+        return this.currentBoundaries && this.currentBoundaries.map(this.yConverter);
+    }
+
+
+    setDefaultSelection(boundaries) {
+        this.defaultSelection = boundaries.map(this.yConverter);
     }
 
     getDefaultSelection() {
-        return this.defaultSelection.map(this.yConverter.invert)
-    }
-
-    resize({width, height, delta}) {
-        this.brushArea.extent([[0, delta], [width, height - delta]]);
-        this.brush.call(this.brushArea);
+        return this.defaultSelection;
     }
 }

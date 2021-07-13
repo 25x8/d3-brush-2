@@ -22,17 +22,18 @@ d3module.initScene({
 })
 
 window.resize = (size) => {
-   d3module.resizeScene(size)
+    d3module.resizeScene(size)
 }
 
 window.updateData = () => {
-    d3module.updateData(window.tmpUpdate.map(({id, status, length, diameter, type}) => (
-        {
-            status,
-            height: length,
-            width: diameter,
-            type,
-            id
+    d3module.updateData(window.tmpUpdate.map(({id, status, length, diameter, type}) => {
+            return {
+                status,
+                height: length,
+                width: diameter,
+                type,
+                id
+            }
         }
-    )));
+    ));
 }

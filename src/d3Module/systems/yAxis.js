@@ -5,28 +5,28 @@ export class YAxis {
     svg;
     axis;
 
-    constructor({svg, endLength, startLength=0,delta = 0}) {
+    constructor({svg, endPosition, startPosition= 0,delta = 0}) {
 
         const height = svg.attr('height');
 
         this.svg = svg;
         this.y = d3.scaleLinear()
-            .domain([endLength, startLength])
+            .domain([endPosition, startPosition])
             .range([height - delta, delta]);
     }
 
-    resize({height, delta}) {
-        this.y.range([height - delta, delta])
-        this.axis.call(d3.axisLeft(this.y))
+    resize({height, delta= 0}) {
+        this.y.range([height - delta, delta]);
+        this.axis && this.axis.call(d3.axisLeft(this.y));
     }
 
-    updateY = (rangeEnd, rangeStart) => {
-        this.y.domain([rangeEnd, rangeStart])
+    update = (endPosition, startPosition= 0) => {
+        this.y.domain([endPosition, startPosition]);
+        this.axis && this.axis.call(d3.axisLeft(this.y));
     }
 
-    update = (rangeEnd, rangeStart=0) => {
-        this.y.domain([rangeEnd, rangeStart])
-        this.axis.call(d3.axisLeft(this.y))
+    updateY = (endPosition, startPosition= 0) => {
+        this.y.domain([endPosition, startPosition]);
     }
 
     appendYline(position) {

@@ -6,6 +6,7 @@ import {
     calculateElementsPosition,
     appendAllElementsToContainer
 } from "./utils/elementsTools";
+import log from "d3-scale/src/log";
 
 export class D3Module {
     FOCUS_WIDTH = 50;
@@ -24,19 +25,27 @@ export class D3Module {
         this.#initFocusBrush();
     }
 
-    resizeScene(size) {
-        this.moduleContainer.style.width = size.width + 'px';
-        this.moduleContainer.style.height = size.height + 'px';
+    resizeScene({width, height}) {
+        this.moduleContainer.style.width = width + 'px';
+        this.moduleContainer.style.height = height + 'px';
 
         this.focus.resize({
-            ...size,
-            width: this.FOCUS_WIDTH
+            height,
+            width: this.FOCUS_WIDTH,
+            delta: 10
+        });
+
+        this.context.resize({
+            height,
+            width: width - this.FOCUS_WIDTH
         });
     }
 
     updateData(data) {
         const updatedLengthAndData = calculateElementsPosition(data);
+
         this.focus.updateMarkersData(updatedLengthAndData);
+        this.context.updateData(updatedLengthAndData)
     }
 
     #createHTMLScenes({selector, width, height}) {
@@ -69,7 +78,6 @@ export class D3Module {
             container: this.moduleContainer,
             elements: [htmlFocus, htmlContext]
         });
-
     }
 
     #createSVGScenes(data) {
@@ -94,13 +102,12 @@ export class D3Module {
 
     #initFocusBrush() {
         const {brushSystem} = this.focus;
-        brushSystem.brush.call(brushSystem.brushArea.move, brushSystem.defaultSelection);
+        brushSystem.moveBrushToDefault();
     }
 
     #linkScenes() {
         this.focus.externalEvent = this.context.changeContextArea;
         this.context.externalEvent = this.focus.changeFocusArea
     }
-
 
 }

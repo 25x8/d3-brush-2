@@ -27,8 +27,14 @@ export class Scene {
             .attr('class', 'scene');
     }
 
+    resize(size){
+        this.yAxis.resize(size);
+        this.brushSystem.resize(size);
+        this.resizeHtmlAndSvg(size);
+        this.render()
+    }
 
-    resizeScene({width, height}) {
+    resizeHtmlAndSvg({width, height}) {
         this.height = height;
         this.width = width;
 

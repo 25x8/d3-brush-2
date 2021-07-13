@@ -7,11 +7,14 @@ export function createHTMLElement({name, width, height}) {
 }
 
 export function calculateElementsPosition(data) {
+
     let totalLength = 0;
     const dataWithCalculatedPosition = data.map(el => {
         el.position = totalLength;
+
         totalLength += el.height;
-        return el;
+
+        return Object.assign({}, el);
     });
 
     return {
