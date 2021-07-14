@@ -37,10 +37,6 @@ export class BrushSystem {
 
     }
 
-    setMaxSize(value){
-        this.maxSize = value;
-    }
-
     moveBrush(boundaries) {
 
         if (boundaries) {
@@ -60,7 +56,9 @@ export class BrushSystem {
         this.brush.call(this.brushArea.move, this.getDefaultSelection());
     }
 
-
+    clearBrush() {
+        this.brush.call(this.brushArea.clear);
+    }
 
     setCurrentSelection(selection) {
         this.currentSelection = selection;
@@ -76,5 +74,15 @@ export class BrushSystem {
 
     getDefaultSelection() {
         return this.defaultSelection;
+    }
+
+    getSelectionDifference(selection) {
+
+        const convertedSelection = selection.map(this.yConverter.invert)
+
+        return {
+            convertedSelection,
+            selectionDifference: convertedSelection.reduce((a, b) => b - a)
+        };
     }
 }

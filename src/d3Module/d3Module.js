@@ -21,7 +21,7 @@ export class D3Module {
         this.#createHTMLScenes({selector, width, height});
         this.#createSVGScenes(data);
         this.#linkScenes();
-        // this.#initFocusBrush();
+        this.#initFocusBrush();
     }
 
     resizeScene({width, height}) {

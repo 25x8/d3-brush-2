@@ -9,15 +9,20 @@ export function createHTMLElement({name, width, height}) {
 export function calculateElementsPosition(data) {
 
     let totalLength = 0;
+    let minimalLength = 100000;
+
     const dataWithCalculatedPosition = data.map(el => {
-        el.position = totalLength;
 
         totalLength += el.height;
+
+        el.position = totalLength;
+        el.height < minimalLength && (minimalLength = el.height)
 
         return Object.assign({}, el);
     });
 
     return {
+        minimalLength,
         totalLength,
         data: dataWithCalculatedPosition
     }

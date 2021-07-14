@@ -18,7 +18,7 @@ export class Context extends Scene {
         super(container);
     }
 
-    init({totalLength, data}) {
+    init({totalLength, minimalLength, data}) {
 
         this.elementsData = data;
         this.visibleElements = data;
@@ -27,6 +27,7 @@ export class Context extends Scene {
         this.#initYAxis(totalLength);
         this.#initBrush();
         this.#initRenderFunction();
+        this.setMinMaxSelection({min: minimalLength});
 
         this.render();
     }
@@ -56,8 +57,17 @@ export class Context extends Scene {
             yConverter: this.yAxis.y,
             onBrushEnd: ({selection}) => {
                 if (selection) {
-                    this.externalEvent && this.externalEvent(selection.map(this.yAxis.y.invert));
-                    this.brushSystem.brush.call(this.brushSystem.brushArea.clear);
+
+                    const {
+                        convertedSelection,
+                        selectionDifference
+                    } = this.brushSystem.getSelectionDifference(selection);
+
+                    if (selectionDifference > this.minBrushSelection) {
+                        this.externalEvent && this.externalEvent(convertedSelection);
+                    }
+
+                    this.brushSystem.clearBrush();
                 }
             }
         });
@@ -114,7 +124,6 @@ export class Context extends Scene {
 
     changeContextArea = (boundaries) => {
 
-
         this.yAxis.updateY(boundaries[1], boundaries[0]);
         this.#getElementFromRange(boundaries);
         this.render();
@@ -134,8 +143,9 @@ export class Context extends Scene {
         }
     }
 
-    updateData({data}) {
+    updateData({data, minimalLength}) {
 
+        this.setMinMaxSelection({min: minimalLength});
         this.elementsData = data;
         this.visibleElements = data;
         this.render();

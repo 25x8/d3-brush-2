@@ -4,7 +4,6 @@ import {YAxis} from "../../systems/yAxis";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
-import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
 
@@ -15,13 +14,13 @@ export class Focus extends Scene {
         super(container);
     }
 
-    init({totalLength, data}) {
+    init({totalLength, minimalLength, data}) {
 
         this.#initYAxis(totalLength);
         this.#initBrush(totalLength);
         this.#createMarkerClusters(data, totalLength);
         this.#initRenderFunction();
-
+        this.setMinMaxSelection({min: minimalLength});
         this.render();
     }
 
@@ -42,17 +41,18 @@ export class Focus extends Scene {
             svg: this.svg,
             delta: 10,
             yConverter: this.yAxis.y,
-            onBrush: (e) => {
-                let newSelection = e.selection.map(this.yAxis.y.invert)
-                const selectionDifference = newSelection.reduce((a, b) => b - a);
+            onBrush: ({selection}) => {
 
-                if (selectionDifference < 10 && e.sourceEvent) {
+                const {
+                    convertedSelection,
+                    selectionDifference
+                } = this.brushSystem.getSelectionDifference(selection);
 
-                    // this.brushSystem.moveBrush();
 
-                } else {
-                    this.externalEvent && this.externalEvent(newSelection);
-                    this.brushSystem.setCurrentSelection(newSelection);
+                if (selectionDifference > this.minBrushSelection) {
+
+                    this.externalEvent && this.externalEvent(convertedSelection);
+                    this.brushSystem.setCurrentSelection(convertedSelection);
                 }
 
             },
@@ -61,16 +61,18 @@ export class Focus extends Scene {
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
                 } else {
-                    let newSelection = selection.map(this.yAxis.y.invert)
-                    const selectionDifference = newSelection.reduce((a, b) => b - a);
-                    if (selectionDifference < 10) {
-                         this.brushSystem.moveBrush();
+
+                    const {selectionDifference} = this.brushSystem.getSelectionDifference(selection);
+
+                    if (selectionDifference < this.minBrushSelection) {
+                        this.brushSystem.moveBrush();
                     }
                 }
             }
         })
+
         this.brushSystem.setDefaultSelection([0, startSelection])
-        // this.brushSystem.brushArea.handleSize(40)
+
     }
 
     #createMarkerClusters(data, totalLength) {
@@ -125,9 +127,10 @@ export class Focus extends Scene {
     }
 
 
-    updateMarkersData({totalLength, data}) {
+    updateMarkersData({totalLength, minimalLength, data}) {
 
         this.yAxis.update(totalLength);
+        this.setMinMaxSelection({min: minimalLength});
         this.#createMarkerClusters(data, totalLength);
         this.render();
         this.brushSystem.moveBrush();

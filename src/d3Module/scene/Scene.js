@@ -8,6 +8,8 @@ export class Scene {
     scene;
     yAxis;
     brushSystem;
+    maxBrushSelection = 0;
+    minBrushSelection = 0;
     externalEvent;
     render;
 
@@ -27,7 +29,7 @@ export class Scene {
             .attr('class', 'scene');
     }
 
-    resize(size){
+    resize(size) {
         this.yAxis.resize(size);
         this.brushSystem.resize(size);
         this.resizeHtmlAndSvg(size);
@@ -35,6 +37,7 @@ export class Scene {
     }
 
     resizeHtmlAndSvg({width, height}) {
+
         this.height = height;
         this.width = width;
 
@@ -46,6 +49,11 @@ export class Scene {
             .attr('width', this.width)
             .attr('height', this.height)
             .attr('viewBox', [0, 0, this.width, this.height]);
+    }
 
+    setMinMaxSelection({min, max}) {
+        console.log(min)
+        max && (this.maxBrushSelection = max);
+        min && (this.minBrushSelection = min);
     }
 }
