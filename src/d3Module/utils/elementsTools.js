@@ -13,10 +13,10 @@ export function calculateElementsPosition(data) {
 
     const dataWithCalculatedPosition = data.map(el => {
 
-        totalLength += el.height;
-
         el.position = totalLength;
         el.height < minimalLength && (minimalLength = el.height)
+
+        totalLength += el.height;
 
         return Object.assign({}, el);
     });

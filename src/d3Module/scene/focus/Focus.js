@@ -69,10 +69,9 @@ export class Focus extends Scene {
                     }
                 }
             }
-        })
+        });
 
         this.brushSystem.setDefaultSelection([0, startSelection])
-
     }
 
     #createMarkerClusters(data, totalLength) {
@@ -80,14 +79,20 @@ export class Focus extends Scene {
         const clusters = [];
 
         if (data.length > this.PARTS_NUMBER) {
+
             const partStep = data.length / this.PARTS_NUMBER;
             const partLength = totalLength / this.PARTS_NUMBER;
+
             for (let i = 0; i < this.PARTS_NUMBER; i++) {
+
                 const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
+
                 nextItem.height = partLength;
                 nextItem.position = partLength * i;
+
                 clusters.push(nextItem);
             }
+
             this.markersData = clusters;
         } else {
             this.markersData = data;
@@ -103,6 +108,7 @@ export class Focus extends Scene {
         });
 
         renderSystem.initRenderFunctions({
+
             enter: (enter) => {
                 const g = enter.append('g')
                     .attr('class', renderSystem.selector);

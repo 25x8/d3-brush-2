@@ -104,6 +104,7 @@ export class D3Module {
     #initFocusBrush() {
 
         const {brushSystem} = this.focus;
+
         brushSystem.moveBrushToDefault();
     }
 
