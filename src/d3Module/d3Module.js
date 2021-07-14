@@ -92,12 +92,9 @@ export class D3Module {
         this.focus.init(data);
     }
 
-    #createSVGContext({data}) {
+    #createSVGContext(data) {
         this.context = new Context(document.getElementById(this.CONTEXT_SELECTOR));
-        this.context.init({
-            boundaries: this.focus.brushSystem.getDefaultSelection(),
-            data
-        });
+        this.context.init(data);
     }
 
     #initFocusBrush() {

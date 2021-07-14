@@ -42,16 +42,19 @@ export class Focus extends Scene {
             delta: 10,
             yConverter: this.yAxis.y,
             onBrush: (e) => {
-                this.externalEvent && this.externalEvent(e.selection.map(this.yAxis.y.invert));
-                this.brushSystem.setCurrentSelection(e.selection);
+
+                const newSelection = e.selection.map(this.yAxis.y.invert)
+
+                this.externalEvent && this.externalEvent(newSelection);
+                this.brushSystem.setCurrentSelection(newSelection);
             },
             onBrushEnd: ({selection}) => {
+
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
                 }
             }
         })
-
         this.brushSystem.setDefaultSelection([0, startSelection])
     }
 

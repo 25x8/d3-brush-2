@@ -6,7 +6,7 @@ export class BrushSystem {
     brush;
     defaultSelection;
     yConverter;
-    currentBoundaries;
+    currentSelection;
 
     constructor({svg, delta = 0, yConverter, onBrush, onBrushEnd}) {
 
@@ -37,23 +37,29 @@ export class BrushSystem {
 
     moveBrush(boundaries) {
 
-        boundaries && this.setCurrentSelection(boundaries);
-        this.brush
-            .transition()
-            .call(this.brushArea.move, this.getCurrentSelection());
+        if (boundaries) {
+            this.setCurrentSelection(boundaries);
+
+            this.brush
+                .transition()
+                .call(this.brushArea.move, this.getCurrentSelection());
+
+        } else {
+            this.brush
+                .call(this.brushArea.move, this.getCurrentSelection())
+        }
     }
 
     moveBrushToDefault() {
-        this.brush
-            .call(this.brushArea.move, this.getDefaultSelection());
+        this.brush.call(this.brushArea.move, this.getDefaultSelection());
     }
 
-    setCurrentSelection(boundaries) {
-        this.currentBoundaries = boundaries.map(this.yConverter.invert);
+    setCurrentSelection(selection) {
+        this.currentSelection = selection;
     }
 
     getCurrentSelection() {
-        return this.currentBoundaries && this.currentBoundaries.map(this.yConverter);
+        return this.currentSelection.map(this.yConverter);
     }
 
 

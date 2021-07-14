@@ -6,7 +6,6 @@ export class YAxis {
     axis;
 
     constructor({svg, endPosition, startPosition= 0,delta = 0}) {
-
         const height = svg.attr('height');
 
         this.svg = svg;

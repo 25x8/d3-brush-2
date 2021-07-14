@@ -18,13 +18,13 @@ export class Context extends Scene {
         super(container);
     }
 
-    init({boundaries, data}) {
+    init({totalLength, data}) {
 
         this.elementsData = data;
         this.visibleElements = data;
 
         this.#appendElementsImages();
-        this.#initYAxis(boundaries);
+        this.#initYAxis(totalLength);
         this.#initBrush();
         this.#initRenderFunction();
 
@@ -42,12 +42,10 @@ export class Context extends Scene {
         });
     }
 
-    #initYAxis(boundaries) {
-
+    #initYAxis(endPosition) {
         this.yAxis = new YAxis({
             svg: this.svg,
-            startPosition: boundaries[0],
-            endPosition: boundaries[1]
+            endPosition
         });
     }
 
@@ -57,8 +55,8 @@ export class Context extends Scene {
             svg: this.svg,
             yConverter: this.yAxis.y,
             onBrushEnd: ({selection}) => {
-                if(selection) {
-                    this.externalEvent && this.externalEvent(selection);
+                if (selection) {
+                    this.externalEvent && this.externalEvent(selection.map(this.yAxis.y.invert));
                     this.brushSystem.brush.call(this.brushSystem.brushArea.clear);
                 }
             }
@@ -112,7 +110,6 @@ export class Context extends Scene {
     }
 
     changeContextArea = (boundaries) => {
-
         this.yAxis.updateY(boundaries[1], boundaries[0]);
         this.#getElementFromRange(boundaries);
         this.render();
