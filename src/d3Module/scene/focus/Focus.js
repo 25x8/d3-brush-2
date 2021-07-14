@@ -14,13 +14,13 @@ export class Focus extends Scene {
         super(container);
     }
 
-    init({totalLength, minimalLength, data}) {
+    init({totalLength, minimalLength, maximalLength, data}) {
 
         this.#initYAxis(totalLength);
         this.#initBrush(totalLength);
         this.#createMarkerClusters(data, totalLength);
         this.#initRenderFunction();
-        this.setMinMaxSelection({min: minimalLength});
+        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
         this.render();
     }
 
@@ -136,14 +136,23 @@ export class Focus extends Scene {
     updateMarkersData({totalLength, minimalLength, data}) {
 
         this.yAxis.update(totalLength);
-        this.setMinMaxSelection({min: minimalLength});
         this.#createMarkerClusters(data, totalLength);
+        this.setMinMaxSelection({min: minimalLength});
         this.render();
         this.brushSystem.moveBrush();
     }
 
     changeFocusArea = (boundaries) => {
         this.brushSystem.moveBrush(boundaries);
+    }
+
+    checkSelectionValid(selectionDifference) {
+
+        if (selectionDifference < this.minBrushSelection) {
+            return false
+        }
+
+        return selectionDifference <= this.maxBrushSelection;
     }
 
 

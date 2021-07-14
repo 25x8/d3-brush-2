@@ -52,7 +52,6 @@ export class Scene {
     }
 
     setMinMaxSelection({min, max}) {
-        console.log(min)
         max && (this.maxBrushSelection = max);
         min && (this.minBrushSelection = min);
     }

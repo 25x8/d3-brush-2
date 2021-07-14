@@ -82,6 +82,7 @@ export class Context extends Scene {
         });
 
         renderSystem.initRenderFunctions({
+
             enter: (enter) => {
 
                 const startAxisPosition = this.yAxis.getStartPosition();
