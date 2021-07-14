@@ -73,6 +73,7 @@ export class Context extends Scene {
 
         renderSystem.initRenderFunctions({
             enter: (enter) => {
+
                 const startAxisPosition = this.yAxis.getStartPosition();
 
                 const svgImage = enter.append('svg')
@@ -97,7 +98,9 @@ export class Context extends Scene {
                     });
             },
             update: (update) => {
+
                 const startAxisPosition = this.yAxis.getStartPosition();
+
                 update
                     .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
                     .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
@@ -110,6 +113,8 @@ export class Context extends Scene {
     }
 
     changeContextArea = (boundaries) => {
+
+
         this.yAxis.updateY(boundaries[1], boundaries[0]);
         this.#getElementFromRange(boundaries);
         this.render();
@@ -130,6 +135,7 @@ export class Context extends Scene {
     }
 
     updateData({data}) {
+
         this.elementsData = data;
         this.visibleElements = data;
         this.render();

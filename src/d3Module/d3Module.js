@@ -6,7 +6,6 @@ import {
     calculateElementsPosition,
     appendAllElementsToContainer
 } from "./utils/elementsTools";
-import log from "d3-scale/src/log";
 
 export class D3Module {
     FOCUS_WIDTH = 50;
@@ -22,10 +21,11 @@ export class D3Module {
         this.#createHTMLScenes({selector, width, height});
         this.#createSVGScenes(data);
         this.#linkScenes();
-        this.#initFocusBrush();
+        // this.#initFocusBrush();
     }
 
     resizeScene({width, height}) {
+
         this.moduleContainer.style.width = width + 'px';
         this.moduleContainer.style.height = height + 'px';
 
@@ -42,6 +42,7 @@ export class D3Module {
     }
 
     updateData(data) {
+
         const updatedLengthAndData = calculateElementsPosition(data);
 
         this.focus.updateMarkersData(updatedLengthAndData);
@@ -81,6 +82,7 @@ export class D3Module {
     }
 
     #createSVGScenes(data) {
+
         const calculatedLengthAndData = calculateElementsPosition(data);
 
         this.#createSVGFocus(calculatedLengthAndData);
@@ -88,16 +90,19 @@ export class D3Module {
     }
 
     #createSVGFocus(data) {
+
         this.focus = new Focus(document.getElementById(this.FOCUS_SELECTOR));
         this.focus.init(data);
     }
 
     #createSVGContext(data) {
+
         this.context = new Context(document.getElementById(this.CONTEXT_SELECTOR));
         this.context.init(data);
     }
 
     #initFocusBrush() {
+
         const {brushSystem} = this.focus;
         brushSystem.moveBrushToDefault();
     }

@@ -4,8 +4,9 @@ export class BrushSystem {
     svg
     brushArea;
     brush;
-    defaultSelection;
+    maxSize;
     yConverter;
+    defaultSelection;
     currentSelection;
 
     constructor({svg, delta = 0, yConverter, onBrush, onBrushEnd}) {
@@ -16,7 +17,7 @@ export class BrushSystem {
         this.svg = svg;
 
         this.brushArea = d3.brushY()
-            .extent([[0, delta], [width, height - delta]])
+            // .extent([[0, delta], [width, height - delta]])
             .on('brush', onBrush)
             .on('end', onBrushEnd);
 
@@ -33,6 +34,11 @@ export class BrushSystem {
         this.defaultSelection = [delta, height - delta];
         this.brushArea.extent([[0, delta], [width, height - delta]]);
         this.brush.call(this.brushArea);
+
+    }
+
+    setMaxSize(value){
+        this.maxSize = value;
     }
 
     moveBrush(boundaries) {
@@ -54,17 +60,18 @@ export class BrushSystem {
         this.brush.call(this.brushArea.move, this.getDefaultSelection());
     }
 
+
+
     setCurrentSelection(selection) {
         this.currentSelection = selection;
     }
 
-    getCurrentSelection() {
-        return this.currentSelection.map(this.yConverter);
-    }
-
-
     setDefaultSelection(boundaries) {
         this.defaultSelection = boundaries.map(this.yConverter);
+    }
+
+    getCurrentSelection() {
+        return this.currentSelection.map(this.yConverter);
     }
 
     getDefaultSelection() {

@@ -4,6 +4,7 @@ import {YAxis} from "../../systems/yAxis";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
+import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
 
@@ -42,23 +43,38 @@ export class Focus extends Scene {
             delta: 10,
             yConverter: this.yAxis.y,
             onBrush: (e) => {
+                let newSelection = e.selection.map(this.yAxis.y.invert)
+                const selectionDifference = newSelection.reduce((a, b) => b - a);
 
-                const newSelection = e.selection.map(this.yAxis.y.invert)
+                if (selectionDifference < 10 && e.sourceEvent) {
 
-                this.externalEvent && this.externalEvent(newSelection);
-                this.brushSystem.setCurrentSelection(newSelection);
+                    // this.brushSystem.moveBrush();
+
+                } else {
+                    this.externalEvent && this.externalEvent(newSelection);
+                    this.brushSystem.setCurrentSelection(newSelection);
+                }
+
             },
             onBrushEnd: ({selection}) => {
 
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
+                } else {
+                    let newSelection = selection.map(this.yAxis.y.invert)
+                    const selectionDifference = newSelection.reduce((a, b) => b - a);
+                    if (selectionDifference < 10) {
+                         this.brushSystem.moveBrush();
+                    }
                 }
             }
         })
         this.brushSystem.setDefaultSelection([0, startSelection])
+        // this.brushSystem.brushArea.handleSize(40)
     }
 
     #createMarkerClusters(data, totalLength) {
+
         const clusters = [];
 
         if (data.length > this.PARTS_NUMBER) {
