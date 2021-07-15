@@ -13,7 +13,6 @@ export class Context extends Scene {
     visibleElements;
     bisect = d3.bisector(d => d.position);
 
-
     constructor(container) {
         super(container);
     }
@@ -91,26 +90,53 @@ export class Context extends Scene {
 
                 const startAxisPosition = this.yAxis.getStartPosition();
 
-                const svgImage = enter.append('svg')
-                    .attr('viewBox', d => {
-                        const els = elementsConfig.find(el => el.id === d.type);
-                        if (els) {
-                            return els.viewBox
-                        }
-                    })
-                    .attr('class', renderSystem.selector)
-                    .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
-                    .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
-                    .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
-                    .attr('y', d => this.yAxis.y(d.position))
-                    .attr('fill', (d, index) => getColor(index))
-                    .attr('stroke', 'black');
+                const context = this;
 
-                svgImage.append('use')
-                    .attr('href', d => {
-                        if (d.type !== 'k')
-                            return `#${d.type}`
-                    });
+                enter.each(function(element, index){
+                    console.log(this)
+                   const svgImage = d3.select(this)
+                        .append('svg')
+                        .attr('viewBox', d => {
+                            const els = elementsConfig.find(el => el.id === d.type);
+                            if (els) {
+                                return els.viewBox
+                            }
+                        })
+                        .attr('class', renderSystem.selector)
+                        .attr('width', context.yAxis.y(element.height + startAxisPosition))
+                        .attr('height', context.yAxis.y(element.height + startAxisPosition))
+                        .attr('x',  (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
+                        .attr('y', context.yAxis.y(element.position))
+                        .attr('fill',  getColor(index))
+                        .attr('stroke', 'black');
+
+                    svgImage.append('use')
+                        .attr('href', d => {
+                            if (d.type !== 'k')
+                                return `#${d.type}`
+                        });
+                })
+
+                // const svgImage = enter.append('svg')
+                //     .attr('viewBox', d => {
+                //         const els = elementsConfig.find(el => el.id === d.type);
+                //         if (els) {
+                //             return els.viewBox
+                //         }
+                //     })
+                //     .attr('class', renderSystem.selector)
+                //     .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
+                //     .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
+                //     .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
+                //     .attr('y', d => this.yAxis.y(d.position))
+                //     .attr('fill', (d, index) => getColor(index))
+                //     .attr('stroke', 'black');
+                //
+                // svgImage.append('use')
+                //     .attr('href', d => {
+                //         if (d.type !== 'k')
+                //             return `#${d.type}`
+                //     });
             },
             update: (update) => {
 
