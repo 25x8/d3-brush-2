@@ -16,15 +16,19 @@ export class Focus extends Scene {
 
     init({totalLength, minimalLength, maximalLength, data}) {
 
-        this.#initYAxis(totalLength);
-        this.#initBrush(totalLength);
-        this.#createMarkerClusters(data, totalLength);
-        this.#initRenderFunction();
+        this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength, max: maximalLength});
+        this.#initYAxis();
+        this.#initBrush();
+        this.#setDefaultSelection();
+        this.#createMarkerClusters(data);
+        this.#initRenderFunction();
         this.render();
     }
 
-    #initYAxis(endPosition) {
+    #initYAxis() {
+
+        const endPosition = this.getTotalLength();
 
         this.yAxis = new YAxis({
             svg: this.svg,
@@ -35,7 +39,7 @@ export class Focus extends Scene {
         this.yAxis.appendYline(this.width);
     }
 
-    #initBrush(startSelection) {
+    #initBrush() {
 
         this.brushSystem = new BrushSystem({
             svg: this.svg,
@@ -49,7 +53,7 @@ export class Focus extends Scene {
                 } = this.brushSystem.getSelectionDifference(selection);
 
 
-                if (selectionDifference > this.minBrushSelection) {
+                if (this.checkSelectionValid(selectionDifference)) {
 
                     this.externalEvent && this.externalEvent(convertedSelection);
                     this.brushSystem.setCurrentSelection(convertedSelection);
@@ -64,18 +68,26 @@ export class Focus extends Scene {
 
                     const {selectionDifference} = this.brushSystem.getSelectionDifference(selection);
 
-                    if (selectionDifference < this.minBrushSelection) {
+                    if (!this.checkSelectionValid(selectionDifference)) {
                         this.brushSystem.moveBrush();
                     }
                 }
             }
         });
-
-        this.brushSystem.setDefaultSelection([0, startSelection])
     }
 
-    #createMarkerClusters(data, totalLength) {
+    #setDefaultSelection() {
 
+        const totalLength = this.getTotalLength();
+
+        totalLength < this.maxBrushSelection
+            ? this.brushSystem.setDefaultSelection([0, totalLength])
+            : this.brushSystem.setDefaultSelection([0, this.maxBrushSelection]);
+    }
+
+    #createMarkerClusters(data) {
+
+        const totalLength = this.getTotalLength();
         const clusters = [];
 
         if (data.length > this.PARTS_NUMBER) {
@@ -133,11 +145,13 @@ export class Focus extends Scene {
     }
 
 
-    updateMarkersData({totalLength, minimalLength, data}) {
+    updateMarkersData({totalLength, minimalLength, maximalLength, data}) {
 
+        this.setTotalLength(totalLength);
+        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
+        this.#setDefaultSelection();
         this.yAxis.update(totalLength);
-        this.#createMarkerClusters(data, totalLength);
-        this.setMinMaxSelection({min: minimalLength});
+        this.#createMarkerClusters(data);
         this.render();
         this.brushSystem.moveBrush();
     }

@@ -4,7 +4,6 @@ export class BrushSystem {
     svg
     brushArea;
     brush;
-    maxSize;
     yConverter;
     defaultSelection;
     currentSelection;
@@ -65,7 +64,7 @@ export class BrushSystem {
     }
 
     setDefaultSelection(boundaries) {
-        this.defaultSelection = boundaries.map(this.yConverter);
+        this.defaultSelection = boundaries;
     }
 
     getCurrentSelection() {
@@ -73,7 +72,7 @@ export class BrushSystem {
     }
 
     getDefaultSelection() {
-        return this.defaultSelection;
+        return this.defaultSelection.map(this.yConverter);
     }
 
     getSelectionDifference(selection) {

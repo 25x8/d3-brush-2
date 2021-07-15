@@ -43,7 +43,10 @@ export class D3Module {
 
     updateData(data) {
 
-        const updatedLengthAndData = calculateElementsPosition(data);
+        const updatedLengthAndData = calculateElementsPosition({
+            data,
+            height: this.moduleContainer.offsetHeight
+        });
 
         this.focus.updateMarkersData(updatedLengthAndData);
         this.context.updateData(updatedLengthAndData)
@@ -83,7 +86,10 @@ export class D3Module {
 
     #createSVGScenes(data) {
 
-        const calculatedLengthAndData = calculateElementsPosition(data);
+        const calculatedLengthAndData = calculateElementsPosition({
+            data,
+            height: this.moduleContainer.offsetHeight
+        });
 
         this.#createSVGFocus(calculatedLengthAndData);
         this.#createSVGContext(calculatedLengthAndData);

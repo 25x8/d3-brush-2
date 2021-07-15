@@ -8,7 +8,7 @@ export function createHTMLElement({name, width, height}) {
     return el;
 }
 
-export function calculateElementsPosition(data) {
+export function calculateElementsPosition({data, height}) {
 
     let totalLength = 0;
     let minimalLength = 100000;
@@ -23,7 +23,7 @@ export function calculateElementsPosition(data) {
         return Object.assign({}, el);
     });
 
-    const maximalLength = calculateMaximumLength({minimalLength, totalLength});
+    const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 
     return {
         minimalLength,
@@ -39,12 +39,14 @@ export function appendAllElementsToContainer({elements, container}) {
         : container.appendChild(elements)
 }
 
-function calculateMaximumLength({minimalLength, totalLength}) {
-    const numberElementsInMinPx = MIN_PX / minimalLength;
-    const maxVisibleLength = totalLength / MIN_PX;
+export function calculateMaximumLength({minimalLength, totalLength, height}) {
 
-    console.log('numberElementsInMinPx', numberElementsInMinPx)
-    console.log('maxVisibleLength', maxVisibleLength)
-   return  maxVisibleLength / (MIN_PX * numberElementsInMinPx);
+    minimalLength < 1 && (minimalLength = Math.floor(1 / minimalLength));
 
+    const pxInMeter = totalLength / height;
+    const metersInMinPxs = pxInMeter * MIN_PX;
+    const elementsInMinPxs = metersInMinPxs / minimalLength;
+
+    // max visible length
+    return  totalLength / elementsInMinPxs;
 }

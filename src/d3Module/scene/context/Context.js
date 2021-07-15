@@ -23,11 +23,12 @@ export class Context extends Scene {
         this.elementsData = data;
         this.visibleElements = data;
 
+        this.setTotalLength(totalLength);
+        this.setMinMaxSelection({min: minimalLength});
         this.#appendElementsImages();
-        this.#initYAxis(totalLength);
+        this.#initYAxis();
         this.#initBrush();
         this.#initRenderFunction();
-        this.setMinMaxSelection({min: minimalLength});
 
         this.render();
     }
@@ -43,7 +44,10 @@ export class Context extends Scene {
         });
     }
 
-    #initYAxis(endPosition) {
+    #initYAxis() {
+
+        const endPosition = this.getTotalLength();
+
         this.yAxis = new YAxis({
             svg: this.svg,
             endPosition
@@ -144,8 +148,9 @@ export class Context extends Scene {
         }
     }
 
-    updateData({data, minimalLength}) {
+    updateData({data, minimalLength, totalLength}) {
 
+        this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
         this.elementsData = data;
         this.visibleElements = data;

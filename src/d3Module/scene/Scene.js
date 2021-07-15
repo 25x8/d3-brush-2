@@ -1,4 +1,5 @@
 import * as d3 from '../utils/d3Lib';
+import {calculateMaximumLength} from "../utils/elementsTools";
 
 export class Scene {
     container;
@@ -10,6 +11,7 @@ export class Scene {
     brushSystem;
     maxBrushSelection = 0;
     minBrushSelection = 0;
+    totalLength = 0;
     externalEvent;
     render;
 
@@ -33,6 +35,15 @@ export class Scene {
         this.yAxis.resize(size);
         this.brushSystem.resize(size);
         this.resizeHtmlAndSvg(size);
+
+        const max = calculateMaximumLength({
+            minimalLength: this.minBrushSelection,
+            totalLength: this.getTotalLength(),
+            height: size.height
+        });
+
+        this.setMinMaxSelection({max});
+
         this.render()
     }
 
@@ -54,5 +65,13 @@ export class Scene {
     setMinMaxSelection({min, max}) {
         max && (this.maxBrushSelection = max);
         min && (this.minBrushSelection = min);
+    }
+
+    setTotalLength(value) {
+        this.totalLength = value;
+    }
+
+    getTotalLength() {
+        return this.totalLength;
     }
 }
