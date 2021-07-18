@@ -33,6 +33,7 @@ export class Focus extends Scene {
         this.yAxis = new YAxis({
             svg: this.svg,
             endPosition,
+            startPosition: -50,
             delta: 10
         });
 

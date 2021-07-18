@@ -48,6 +48,8 @@ export class D3Module {
             height: this.moduleContainer.offsetHeight
         });
 
+        this.#addMainElement(updatedLengthAndData);
+
         this.focus.updateMarkersData(updatedLengthAndData);
         this.context.updateData(updatedLengthAndData)
     }
@@ -86,10 +88,14 @@ export class D3Module {
 
     #createSVGScenes(data) {
 
+
+
         const calculatedLengthAndData = calculateElementsPosition({
             data,
             height: this.moduleContainer.offsetHeight
         });
+     this.#addMainElement(calculatedLengthAndData);
+
 
         this.#createSVGFocus(calculatedLengthAndData);
         this.#createSVGContext(calculatedLengthAndData);
@@ -117,6 +123,18 @@ export class D3Module {
     #linkScenes() {
         this.focus.externalEvent = this.context.changeContextArea;
         this.context.externalEvent = this.focus.changeFocusArea
+    }
+
+    #addMainElement({data}) {
+        data.unshift({
+            "id": "main-element",
+            "status": null,
+            "work": 0,
+            "height": 50,
+            "type": "main",
+        });
+
+        return data
     }
 
 }

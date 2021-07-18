@@ -5,6 +5,7 @@ import {elementsConfig} from "../../utils/elementsConfig";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
+import mainElementSvg from '../../../img/icons/test.svg';
 
 
 export class Context extends Scene {
@@ -93,28 +94,43 @@ export class Context extends Scene {
                 const context = this;
 
                 enter.each(function(element, index){
-                    console.log(this)
-                   const svgImage = d3.select(this)
-                        .append('svg')
-                        .attr('viewBox', d => {
-                            const els = elementsConfig.find(el => el.id === d.type);
-                            if (els) {
-                                return els.viewBox
-                            }
-                        })
-                        .attr('class', renderSystem.selector)
-                        .attr('width', context.yAxis.y(element.height + startAxisPosition))
-                        .attr('height', context.yAxis.y(element.height + startAxisPosition))
-                        .attr('x',  (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
-                        .attr('y', context.yAxis.y(element.position))
-                        .attr('fill',  getColor(index))
-                        .attr('stroke', 'black');
 
-                    svgImage.append('use')
-                        .attr('href', d => {
-                            if (d.type !== 'k')
-                                return `#${d.type}`
-                        });
+                    if(element.id === 'main-element') {
+                         d3.select(this)
+                            .append('image')
+                            .attr('xlink:href', mainElementSvg)
+                            .attr('class', renderSystem.selector)
+                            .attr('width', context.yAxis.y(element.height + startAxisPosition))
+                            .attr('height', context.yAxis.y(element.height + startAxisPosition))
+                            .attr('x',  (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
+                            .attr('y', context.yAxis.y(-50))
+                            .attr('fill',  getColor(index))
+                            .attr('stroke', 'black');
+
+                    } else {
+
+                        const svgImage = d3.select(this)
+                            .append('svg')
+                            .attr('viewBox', d => {
+                                const els = elementsConfig.find(el => el.id === d.type);
+                                if (els) {
+                                    return els.viewBox
+                                }
+                            })
+                            .attr('class', renderSystem.selector)
+                            .attr('width', context.yAxis.y(element.height + startAxisPosition))
+                            .attr('height', context.yAxis.y(element.height + startAxisPosition))
+                            .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
+                            .attr('y', context.yAxis.y(element.position))
+                            .attr('fill', getColor(index))
+                            .attr('stroke', 'black');
+
+                        svgImage.append('use')
+                            .attr('href', d => {
+                                if (d.type !== 'k')
+                                    return `#${d.type}`
+                            });
+                    }
                 })
 
                 // const svgImage = enter.append('svg')
@@ -142,11 +158,30 @@ export class Context extends Scene {
 
                 const startAxisPosition = this.yAxis.getStartPosition();
 
-                update
-                    .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
-                    .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
-                    .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
-                    .attr('y', d => this.yAxis.y(d.position))
+                const context = this;
+
+                update.each(function(element, index) {
+
+                    if (element.id === 'main-element') {
+                        d3.select(this)
+                            .attr('width', d => context.yAxis.y(d.height + startAxisPosition))
+                            .attr('height', d => context.yAxis.y(d.height + startAxisPosition))
+                            .attr('x', d => (context.width / 2) - (context.yAxis.y(d.height + startAxisPosition) / 2))
+                            .attr('y', d => context.yAxis.y(-50))
+                    } else {
+                        d3.select(this)
+                            .attr('width', d => context.yAxis.y(d.height + startAxisPosition))
+                            .attr('height', d => context.yAxis.y(d.height + startAxisPosition))
+                            .attr('x', d => (context.width / 2) - (context.yAxis.y(d.height + startAxisPosition) / 2))
+                            .attr('y', d => context.yAxis.y(d.position))
+                    }
+                })
+
+                // update
+                //     .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
+                //     .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
+                //     .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
+                //     .attr('y', d => this.yAxis.y(d.position))
             },
         });
 

@@ -16,8 +16,6 @@ export class RenderSystem {
 
     renderElements(data) {
 
-        // data = this.addMainElement(data);
-
         this.scene.selectAll(`.${this.selector}`)
             .data(data, d => d.id)
             .join(
@@ -27,18 +25,6 @@ export class RenderSystem {
             )
     }
 
-    addMainElement(data) {
-
-        data.unshift({
-            "id": "main-element",
-            "status": null,
-            "work": 0,
-            "length": 50,
-            "type": "main",
-        });
-
-        return data
-    }
 
     enterElements(enter) {}
 
