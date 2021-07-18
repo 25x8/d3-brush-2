@@ -32,6 +32,7 @@ export class Context extends Scene {
         this.#appendElementsImages();
         this.#initYAxis();
         this.#initBrush();
+        this.#initMouseEvents();
         this.#initRenderFunction();
 
         this.render();
@@ -79,6 +80,10 @@ export class Context extends Scene {
                 }
             }
         });
+    }
+
+    #initMouseEvents() {
+
     }
 
     #initRenderFunction() {
@@ -222,6 +227,8 @@ export class Context extends Scene {
         this.visibleElements = data;
         this.render();
     }
+
+
 
     selectElement(id) {
         try {

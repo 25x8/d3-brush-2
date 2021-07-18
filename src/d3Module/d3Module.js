@@ -21,6 +21,7 @@ export class D3Module {
     initScene({selector, width, height, data}) {
         this.#createHTMLScenes({selector, width, height});
         this.#createSVGScenes(data);
+        this.#createTooltip()
         this.#linkScenes();
         this.#moveBrushToDefault();
     }
@@ -123,6 +124,10 @@ export class D3Module {
         this.context.init(data);
     }
 
+    #createTooltip() {
+
+    }
+
     #moveBrushToDefault() {
         const {brushSystem} = this.focus;
 
@@ -134,7 +139,7 @@ export class D3Module {
         this.context.externalEvent = this.focus.changeFocusArea
     }
 
-    #addMainElement({data, totalLength}) {
+    #addMainElement({data}) {
 
         data.unshift({
             "id": "main-element",
