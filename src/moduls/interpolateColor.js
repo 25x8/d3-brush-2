@@ -1,3 +1,4 @@
+// градмент цветов
 function Interpolate(start, end, steps, count) {
     let s = start;
     let final = s + (((end - s) / steps) * count);

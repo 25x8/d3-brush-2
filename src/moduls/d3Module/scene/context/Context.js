@@ -5,8 +5,9 @@ import {elementsConfig} from "../../utils/elementsConfig";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
-import mainElementSvg from '../../../img/icons/test.svg';
+import mainElementSvg from '../../../../img/icons/test.svg';
 import {drawRectangle} from "../../utils/drawElement";
+import {TYPE_K} from "../../../../index";
 
 
 export class Context extends Scene {
@@ -83,7 +84,32 @@ export class Context extends Scene {
     }
 
     #initMouseEvents() {
+        this.svg
+            .on('mouseover', () => {
+                this.tooltip.show();
+            })
+            .on('mousemove', (e) => {
+                let {clientX: currentX, clientY: currentY} = e;
 
+
+
+
+                const hoveringMeter =  this.yAxis.y.invert(currentY);
+
+
+                if (hoveringMeter !== -1 && hoveringMeter > this.totalLength) {
+                    return undefined
+                }
+
+               const index = this.bisect.left(this.elementsData, hoveringMeter) - 2
+
+                this.tooltip.setContent(Scheme2D.getTooltip(index));
+
+                this.tooltip.setPosition(currentX, currentY);
+            })
+            .on('mouseout', () => {
+                this.tooltip.hide();
+            })
     }
 
     #initRenderFunction() {
@@ -116,7 +142,7 @@ export class Context extends Scene {
                             .attr('fill', getColor(index))
                             .attr('stroke', 'black');
 
-                    } else if (element.type === 'k') {
+                    } else if (element.type === TYPE_K) {
 
                         d3.select(this)
                             .append('g')
@@ -165,7 +191,7 @@ export class Context extends Scene {
 
                 update.each(function (element, index) {
 
-                    if (element.type === 'k') {
+                    if (element.type === TYPE_K) {
 
                         d3.select(this)
                             .select('path')
@@ -228,13 +254,18 @@ export class Context extends Scene {
         this.render();
     }
 
-
+    updateColor({index, color}) {
+        const element = this.elementsData[index];
+        element.color = color;
+    }
 
     selectElement(id) {
+
         try {
 
             this.selectedElement && (this.selectedElement.select = false);
             this.selectedElement = this.elementsData.find(el => el.id === id);
+
             this.selectedElement.select = true;
 
             const {position} = this.selectedElement;

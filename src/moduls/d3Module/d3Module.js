@@ -6,11 +6,13 @@ import {
     calculateElementsPosition,
     appendAllElementsToContainer
 } from "./utils/elementsTools";
+import Tooltip from "./Tooltip/tooltip";
 
 export class D3Module {
     FOCUS_WIDTH = 50;
     FOCUS_SELECTOR = 'd3-module-focus';
     CONTEXT_SELECTOR = 'd3-module-context';
+    TOOLTIP_SELECTOR = 'tooltip-context';
     MAIN_ELEMENT_SIZE = 50;
 
     container;
@@ -23,7 +25,7 @@ export class D3Module {
         this.#createSVGScenes(data);
         this.#createTooltip()
         this.#linkScenes();
-        this.#moveBrushToDefault();
+        this.moveBrushToDefault();
     }
 
     resizeScene({width, height}) {
@@ -56,13 +58,18 @@ export class D3Module {
         this.context.updateData(updatedLengthAndData)
     }
 
+    updateColor({index, color}) {
+        this.focus.updateColor({index, color});
+        this.context.updateColor({index, color});
+    }
+
     selectElement(id) {
         this.context.selectElement(id)
     }
 
     deselectElement() {
         this.context.selectedElement && this.context.deselectElement();
-        this.#moveBrushToDefault();
+        this.moveBrushToDefault();
     }
 
     #createHTMLScenes({selector, width, height}) {
@@ -91,10 +98,16 @@ export class D3Module {
             height
         });
 
+        const htmlTooltip = createHTMLElement({name: this.TOOLTIP_SELECTOR});
+
         appendAllElementsToContainer({
             container: this.moduleContainer,
             elements: [htmlFocus, htmlContext]
         });
+
+
+             document.querySelector('body').prepend(htmlTooltip);
+
     }
 
     #createSVGScenes(data) {
@@ -103,7 +116,6 @@ export class D3Module {
             data,
             height: this.moduleContainer.offsetHeight
         });
-
 
         this.#addMainElement(calculatedLengthAndData);
         this.#createSVGFocus(calculatedLengthAndData);
@@ -125,10 +137,10 @@ export class D3Module {
     }
 
     #createTooltip() {
-
+        this.context.tooltip = new Tooltip(`#${this.TOOLTIP_SELECTOR}`);
     }
 
-    #moveBrushToDefault() {
+    moveBrushToDefault() {
         const {brushSystem} = this.focus;
 
         brushSystem.moveBrushToDefault();

@@ -133,13 +133,18 @@ export class Focus extends Scene {
                         return FocusMarker.createLinePath({x: 25, y: d.position, length: d.height, yConverter: renderSystem.y});
                     })
                     .attr('stroke', '#b47e94')
-                    .attr('fill', (d, index) => getColor(index));
+                    .attr('fill', (d, index) => {
+                        return d.color || getColor(index)
+                    });
 
             },
             update: (update) => {
                 update.select('path')
                     .attr('d', d => {
                         return FocusMarker.createLinePath({x: 25, y: d.position, length: d.height, yConverter: renderSystem.y});
+                    })
+                    .attr('fill', (d, index) => {
+                        return d.color || getColor(index)
                     });
             }
         });
@@ -148,7 +153,7 @@ export class Focus extends Scene {
     }
 
 
-    updateMarkersData({totalLength, minimalLength, maximalLength, data}) {
+    updateMarkersData({totalLength, maximalLength, data}) {
 
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: this.MAIN_ELEMENT_SIZE, max: maximalLength});
@@ -158,6 +163,11 @@ export class Focus extends Scene {
         this.#createMarkerClusters(data);
         this.render();
         this.brushSystem.moveBrush();
+    }
+
+    updateColor({index, color}) {
+        const element = this.markersData[index];
+        element.color = color;
     }
 
     changeFocusArea = (boundaries) => {

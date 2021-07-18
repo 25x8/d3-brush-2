@@ -8,4 +8,23 @@
 <body>
 <div id="main-scene"></div>
 </body>
+<script>
+    Scheme2D.init({
+        data: window.tmp,
+        element: "#main-scene",
+        mode: "work",
+        description: {
+            text: "main test"
+        },
+        size: {
+            width: 400,
+            height: 391
+        },
+        fnTooltipItem: (data, mode) => `id: ${data.id}<br>val: ${data[mode]}`,
+        fnTooltipMain: (data) => `<i>MAIN</i>: ${data.text}`,
+        fnClick: (type, id) => {
+            alert(`${type}, ${id}`)
+        }
+    });
+</script>
 </html>

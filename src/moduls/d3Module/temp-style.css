@@ -9,3 +9,7 @@
 #d3-module-container {
     display: flex;
 }
+
+#tooltip-context {
+    position: fixed;
+}

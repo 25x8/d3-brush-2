@@ -1,47 +1,257 @@
 import './test';
-import {D3Module} from "./d3Module/d3Module";
 
-const d3module = new D3Module();
-const data = window.tmp;
+import {Singleton} from "./moduls/patterns";
+import {getColor, getColorFromMax} from "./moduls/interpolateColor";
+import {D3Module} from "./moduls/d3Module/d3Module";
+import './test'
 
-const d3_data = data.map(({id, status, length, diameter, type}) => (
-    {
-        status,
-        height: length,
-        width: diameter,
-        type,
-        id
-    }
-))
+const TYPE_K = "k";
+const TYPE_K_COLOR = "#2a77b6";
+// todo использовать для заливки главного элемента
+const MAIN_COLOR = "#0f2f49";
+// todo использовать для заливки выбранного элемента
+const SELECT_COLOR = "#13a81b";
+const SCENE = '#main-scene';
 
-d3module.initScene({
-    selector: '#main-scene',
-    width: 400,
-    height: 700,
-    data: d3_data
-})
 
-window.select = (id) => {
-    d3module.selectElement(id)
-}
+class Scheme2D extends Singleton {
+    // Режим работы work/mode2/mode3/mode4
+    mode = "work";
+    // Данные
+    data = [];
+    /**
+     * Выбранный элемент
+     * @type {{index: null, id: null}}
+     */
+    select = {
+        id: null,
+        index: null
+    };
 
-window.deselect = (id) => {
-    d3module.deselectElement()
-}
+    d3module = new D3Module();
 
-window.resize = (size) => {
-    d3module.resizeScene(size)
-}
+    constructor({data, element, mode, description, size, fnTooltipItem, fnTooltipMain, fnClick}) {
+        // Наследование Singleton
+        super();
+        this.data = data;
+        this.element = element;
+        // режим работы
+        this.mode = mode;
+        // информация для главного элемента
+        this.description = description;
 
-window.updateData = () => {
-    d3module.updateData(window.tmpUpdate.map(({id, status, length, diameter, type}) => {
-            return {
+        // обработчики
+        this.fnTooltipItem = fnTooltipItem;
+        this.fnTooltipMain = fnTooltipMain;
+        this.fnClick = fnClick;
+
+        // инициализация плагина d3
+
+        const d3_data = data.map(({status, length, diameter, type, id}) => {
+
+            const newDatum = {
                 status,
-                height: length,
-                width: diameter,
                 type,
                 id
             }
+
+            length && (newDatum.height = length);
+            diameter && (newDatum.width = diameter);
+
+            return newDatum
+        })
+
+        this.d3module.initScene({
+            selector: element,
+            width: size.width,
+            height: size.height,
+            data: d3_data
+        });
+
+        window.select = (id) => {
+            this.d3module.selectElement(id)
         }
-    ));
+
+        window.deselect = (id) => {
+            this.d3module.deselectElement()
+        }
+
+        window.resize = (size) => {
+            this.d3module.resizeScene(size)
+        }
+
+        window.updateData = () => {
+            this.d3module.updateData(window.tmpUpdate.map(({id, status, length, diameter, type}) => {
+                    return {
+                        status,
+                        height: length,
+                        width: diameter,
+                        type,
+                        id
+                    }
+                }
+            ));
+        }
+    }
+
+    /**
+     * Изменение режима работы
+     * @param mode
+     */
+    changeMode = (mode) => {
+        this.mode = mode;
+        this.data.forEach(({[mode]: val, type}, index) => {
+            // обновить цвет элемента
+            const color = mode === "work" ? getColor(val) : getColorFromMax(val);
+            if (type !== TYPE_K) {
+                this.d3module.updateColor({index, color})
+            }
+        })
+    }
+
+    /**
+     * Выделение и зуммирование к элементу / снятие выделения
+     * @param newId
+     */
+    selectItem = (newId = this.select.id) => {
+        // индекс ранее выбраного элемента
+        const oldIndex = this.select.index;
+        // id ранее выбраного элемента
+        const oldId = this.select.id;
+        // индекс выброного
+        const newIndex = this.data.findIndex(({id}) => id === newId);
+
+        if (oldIndex === newIndex) {
+            // если есть ранее выбранный элемент - сбросить его
+            this.d3module.deselectElement(oldIndex);
+        } else {
+            this.d3module.selectElement(newIndex);
+        }
+
+        // обновление выбранного элемента (изменение/сброс)
+        this.select = newId !== oldId
+            ? {id: newId, index: newIndex}
+            : {id: null, index: null};
+    }
+
+    resize = (size) => {
+        console.log(size)
+        this.d3module.resizeScene(size)
+    }
+
+    /**
+     * Обновить данные
+     * @param newData
+     */
+    updateData = (newData) => {
+        const currentData = Scheme2D.instance.data;
+        const mode = Scheme2D.getMode();
+        const selectIndex = Scheme2D.instance.select.index;
+
+        let updateColorMap = false;
+        let updateStatusMap = false;
+        let update = false;
+        if ((currentData.length === 0 && newData.length !== 0) || (currentData.length !== 0 && newData.length === 0) ) {
+            update = true;
+        } else {
+            try {
+                if (currentData[0].id !== newData[0].id) update = true;
+            } catch (e) {}
+        }
+
+        // обновить данные класса
+        Scheme2D.instance.data = newData;
+        // todo andrey обновить description
+
+        console.log("newData",newData)
+        // поменялась схема
+        if (update) {
+            // todo обновить схему
+            // const d3_data = newData.map(({status, length, type}) => ({status, width: length, type}))
+            const d3_data = newData.map(({status, length, diameter, type}) => ({status, width: length, height: diameter, type}))
+            this.d3module.updateData(d3_data)
+            if (Scheme2D.instance.select.id) Scheme2D.instance.selectItem();
+        } else {
+            // изминились данные
+            newData.forEach(({[mode]: newVal, status: newStatus}, index) => {
+                console.log(`index`, index)
+                const currentVal = currentData[index][mode];
+                const currentStatus = currentData[index][mode];
+
+                // обновить цвет элемента (за исключением выделеных элементов)
+                if (currentVal !== newVal && selectIndex !== index) {
+                    const color = Scheme2D.getColor(index);
+                    this.d3module.updateColor({index, color});
+                    updateColorMap = true;
+                }
+                if (currentStatus !== newStatus) {
+                    this.d3module.updateColor({index, color});
+                    updateStatusMap = true;
+                }
+            })
+        }
+    }
+
+    toMaxZoom = () => {
+        this.d3module.moveBrushToDefault();
+    }
+
+    /**
+     * Получение html tooltip
+     * @param index
+     * @returns {string}
+     */
+    static getTooltip = (index) => {
+        const instance = Scheme2D.instance;
+        if (index === -1) {
+            const data = instance.description;
+            return instance.fnTooltipMain(data);
+        }
+        const mode = Scheme2D.getMode();
+        const data = instance.data[index];
+
+        const color = Scheme2D.getColor(index);
+        return instance.fnTooltipItem(data, mode, color)
+    }
+
+
+    /**
+     * Получение цвета элемента
+     * @param index
+     * @returns {string}
+     */
+    static getColor = (index) => {
+        const mode = Scheme2D.getMode();
+        const {[mode]: val, type} = Scheme2D.instance.data[index];
+        if (type === TYPE_K) return TYPE_K_COLOR;
+
+        return mode === "work" ? getColor(val) : getColorFromMax(val);
+    }
+
+    static onClickItem = (index) => {
+        if (index === -1) return;
+
+        const data = Scheme2D.instance.data[index];
+        const {type, id} = data;
+        Scheme2D.instance.fnClick(type, id, index);
+    }
+
+    /**
+     * Статические методы для управления схемой
+     */
+    static init = (o) => new Scheme2D(o);
+    static changeMode = (mode) => Scheme2D.instance.changeMode(mode);
+    static selectItem = (id) => Scheme2D.instance.selectItem(id);
+    static getMode = () => Scheme2D.instance.mode;
+    static updateData = (data) => Scheme2D.instance.updateData(window.tmp);
+    static resize = (size) => Scheme2D.instance.resize(size);
+    static toMaxZoom = () => Scheme2D.instance.toMaxZoom();
+
 }
+
+window.Scheme2D = Scheme2D;
+
+
+
+export {SELECT_COLOR, TYPE_K, TYPE_K_COLOR}
+export {Scheme2D};

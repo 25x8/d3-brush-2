@@ -7,11 +7,7 @@ export default class Tooltip {
     margin = 210;
 
     constructor(selector) {
-        const container = document.querySelector(selector);
-        this.container = container;
-        const focusRect = document.querySelector('#focus').getBoundingClientRect()
-        this.margin = focusRect.y;
-
+        this.container = document.querySelector(selector);
     }
 
     show = () => {
@@ -23,6 +19,9 @@ export default class Tooltip {
     }
 
     setPosition = (x, y) => {
+        x = this.leftRightCollisions(x);
+        y = this.topCollision(y);
+
         this.container.style.transform = `translate(${x}px, ${y}px)`;
     }
 
