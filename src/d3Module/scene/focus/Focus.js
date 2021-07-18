@@ -17,7 +17,7 @@ export class Focus extends Scene {
     init({totalLength, minimalLength, maximalLength, data}) {
 
         this.setTotalLength(totalLength);
-        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
+        this.setMinMaxSelection({min: 50, max: maximalLength});
         this.#initYAxis();
         this.#initBrush();
         this.#setDefaultSelection();
@@ -149,7 +149,7 @@ export class Focus extends Scene {
     updateMarkersData({totalLength, minimalLength, maximalLength, data}) {
 
         this.setTotalLength(totalLength);
-        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
+        this.setMinMaxSelection({min: 50, max: maximalLength});
         this.#setDefaultSelection();
         this.yAxis.update(totalLength);
         this.#createMarkerClusters(data);
