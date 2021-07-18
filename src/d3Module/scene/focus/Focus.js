@@ -82,8 +82,8 @@ export class Focus extends Scene {
         const totalLength = this.getTotalLength();
 
         totalLength < this.maxBrushSelection
-            ? this.brushSystem.setDefaultSelection([0, totalLength])
-            : this.brushSystem.setDefaultSelection([0, this.maxBrushSelection]);
+            ? this.brushSystem.setDefaultSelection([-50, totalLength - 50])
+            : this.brushSystem.setDefaultSelection([-50, this.maxBrushSelection - 50]);
     }
 
     #createMarkerClusters(data) {
