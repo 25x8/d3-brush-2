@@ -1,5 +1,6 @@
 #d3-module-focus, #d3-module-context {
     border: 1px solid;
+    position: relative;
 }
 
 *{
@@ -8,8 +9,22 @@
 
 #d3-module-container {
     display: flex;
+
 }
 
 #tooltip-context {
     position: fixed;
+}
+
+#hover-line {
+    position: absolute;
+    border: 1px dashed black;
+    top: 20px;
+    display: none;
+    pointer-events: none;
+    width: 100%;
+}
+
+#hover-line.active {
+    display: block;
 }

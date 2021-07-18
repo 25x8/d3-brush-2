@@ -100,6 +100,10 @@ export class D3Module {
 
         const htmlTooltip = createHTMLElement({name: this.TOOLTIP_SELECTOR});
 
+        const htmlHoverLine = createHTMLElement({name: 'hover-line'});
+
+        htmlContext.prepend(htmlHoverLine);
+
         appendAllElementsToContainer({
             container: this.moduleContainer,
             elements: [htmlFocus, htmlContext]

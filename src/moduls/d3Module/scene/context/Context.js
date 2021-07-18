@@ -15,6 +15,7 @@ export class Context extends Scene {
     elementsData;
     visibleElements;
     selectedElement;
+    hoverline;
     bisect = d3.bisector(d => d.position);
 
     constructor(container) {
@@ -84,31 +85,33 @@ export class Context extends Scene {
     }
 
     #initMouseEvents() {
+
+        this.hoverline = d3.select('#hover-line');
+
         this.svg
             .on('mouseover', () => {
                 this.tooltip.show();
+                this.hoverline.classed('active', true);
             })
             .on('mousemove', (e) => {
                 let {clientX: currentX, clientY: currentY} = e;
 
-
-
-
-                const hoveringMeter =  this.yAxis.y.invert(currentY);
-
+                const hoveringMeter = this.yAxis.y.invert(currentY);
 
                 if (hoveringMeter !== -1 && hoveringMeter > this.totalLength) {
                     return undefined
                 }
 
-               const index = this.bisect.left(this.elementsData, hoveringMeter) - 2
+                const index = this.bisect.left(this.elementsData, hoveringMeter) - 2
 
+
+                this.hoverline.style('top', `${currentY}px`);
                 this.tooltip.setContent(Scheme2D.getTooltip(index));
-
                 this.tooltip.setPosition(currentX, currentY);
             })
             .on('mouseout', () => {
                 this.tooltip.hide();
+                this.hoverline.classed('active', false);
             })
     }
 
