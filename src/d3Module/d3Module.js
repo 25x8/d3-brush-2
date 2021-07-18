@@ -22,7 +22,7 @@ export class D3Module {
         this.#createHTMLScenes({selector, width, height});
         this.#createSVGScenes(data);
         this.#linkScenes();
-        this.#initFocusBrush();
+        this.#moveBrushToDefault();
     }
 
     resizeScene({width, height}) {
@@ -57,6 +57,11 @@ export class D3Module {
 
     selectElement(id) {
         this.context.selectElement(id)
+    }
+
+    deselectElement() {
+        this.context.selectedElement && this.context.deselectElement();
+        this.#moveBrushToDefault();
     }
 
     #createHTMLScenes({selector, width, height}) {
@@ -118,7 +123,7 @@ export class D3Module {
         this.context.init(data);
     }
 
-    #initFocusBrush() {
+    #moveBrushToDefault() {
         const {brushSystem} = this.focus;
 
         brushSystem.moveBrushToDefault();

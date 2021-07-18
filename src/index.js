@@ -25,6 +25,10 @@ window.select = (id) => {
     d3module.selectElement(id)
 }
 
+window.deselect = (id) => {
+    d3module.deselectElement()
+}
+
 window.resize = (size) => {
     d3module.resizeScene(size)
 }

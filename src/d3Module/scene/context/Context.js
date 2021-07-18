@@ -13,6 +13,7 @@ export class Context extends Scene {
 
     elementsData;
     visibleElements;
+    selectedElement;
     bisect = d3.bisector(d => d.position);
 
     constructor(container) {
@@ -93,7 +94,6 @@ export class Context extends Scene {
             enter: (enter) => {
 
                 const startAxisPosition = this.yAxis.getStartPosition();
-
                 const context = this;
 
                 enter.each(function (element, index) {
@@ -158,7 +158,7 @@ export class Context extends Scene {
                 const startAxisPosition = this.yAxis.getStartPosition();
                 const context = this;
 
-                update.each(function (element) {
+                update.each(function (element, index) {
 
                     if (element.type === 'k') {
 
@@ -169,7 +169,8 @@ export class Context extends Scene {
                                 y: context.yAxis.y(element.position),
                                 width: context.yAxis.y(element.height + startAxisPosition),
                                 height: context.yAxis.y(element.width + startAxisPosition)
-                            }));
+                            }))
+                            .attr('fill', element.select ? 'red' : getColor(index));
                     } else {
 
                         d3.select(this)
@@ -177,9 +178,10 @@ export class Context extends Scene {
                             .attr('height', context.yAxis.y(element.height + startAxisPosition))
                             .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
                             .attr('y', context.yAxis.y(element.position))
+                            .attr('fill', element.select ? 'red' : getColor(index))
                     }
-                });
 
+                });
 
             },
         });
@@ -206,6 +208,8 @@ export class Context extends Scene {
         } else {
             this.visibleElements = this.elementsData.slice(leftPos, rightPos);
         }
+
+        return this.visibleElements[0];
     }
 
     updateData({data, minimalLength, totalLength}) {
@@ -221,11 +225,23 @@ export class Context extends Scene {
 
     selectElement(id) {
         try {
-            const {position} = this.elementsData.find(el => el.id === id);
+
+            this.selectedElement && (this.selectedElement.select = false);
+            this.selectedElement = this.elementsData.find(el => el.id === id);
+            this.selectedElement.select = true;
+
+            const {position} = this.selectedElement;
+
             this.externalEvent([position, position + this.minBrushSelection])
         } catch (e) {
             alert('Выбранный элемент не найден')
         }
+    }
+
+    deselectElement() {
+        this.selectedElement.select = false;
+        this.selectedElement = null;
+        this.render();
     }
 
 }
