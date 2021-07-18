@@ -31,7 +31,7 @@ export class BrushSystem {
     resize({width, height, delta = 0}) {
 
         this.defaultSelection = [delta, height - delta];
-        this.brushArea.extent([[0, delta], [width, height - delta]]);
+        // this.brushArea.extent([[0, delta], [width, height - delta]]);
         this.brush.call(this.brushArea);
 
     }
@@ -77,7 +77,7 @@ export class BrushSystem {
 
     getSelectionDifference(selection) {
 
-        const convertedSelection = selection.map(this.yConverter.invert)
+        const convertedSelection = selection.map(this.yConverter.invert);
 
         return {
             convertedSelection,

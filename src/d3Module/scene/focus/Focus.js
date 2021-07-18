@@ -16,8 +16,10 @@ export class Focus extends Scene {
 
     init({totalLength, minimalLength, maximalLength, data}) {
 
+        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE)
+
         this.setTotalLength(totalLength);
-        this.setMinMaxSelection({min: 50, max: maximalLength});
+        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
         this.#initYAxis();
         this.#initBrush();
         this.#setDefaultSelection();
@@ -33,7 +35,7 @@ export class Focus extends Scene {
         this.yAxis = new YAxis({
             svg: this.svg,
             endPosition,
-            startPosition: -50,
+            startPosition: -this.MAIN_ELEMENT_SIZE,
             delta: 10
         });
 
@@ -53,7 +55,6 @@ export class Focus extends Scene {
                     selectionDifference
                 } = this.brushSystem.getSelectionDifference(selection);
 
-
                 if (this.checkSelectionValid(selectionDifference)) {
 
                     this.externalEvent && this.externalEvent(convertedSelection);
@@ -61,7 +62,8 @@ export class Focus extends Scene {
                 }
 
             },
-            onBrushEnd: ({selection}) => {
+            onBrushEnd: (e) => {
+                const {selection} = e;
 
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
@@ -82,8 +84,8 @@ export class Focus extends Scene {
         const totalLength = this.getTotalLength();
 
         totalLength < this.maxBrushSelection
-            ? this.brushSystem.setDefaultSelection([-50, totalLength - 50])
-            : this.brushSystem.setDefaultSelection([-50, this.maxBrushSelection - 50]);
+            ? this.brushSystem.setDefaultSelection([-this.MAIN_ELEMENT_SIZE, totalLength])
+            : this.brushSystem.setDefaultSelection([-this.MAIN_ELEMENT_SIZE, this.maxBrushSelection - this.MAIN_ELEMENT_SIZE]);
     }
 
     #createMarkerClusters(data) {
@@ -128,7 +130,7 @@ export class Focus extends Scene {
 
                 g.append('path')
                     .attr('d', d => {
-                        return FocusMarker.createLinePath(25, d.position, d.height, renderSystem.y);
+                        return FocusMarker.createLinePath({x: 25, y: d.position, length: d.height, yConverter: renderSystem.y});
                     })
                     .attr('stroke', '#b47e94')
                     .attr('fill', (d, index) => getColor(index));
@@ -137,7 +139,7 @@ export class Focus extends Scene {
             update: (update) => {
                 update.select('path')
                     .attr('d', d => {
-                        return FocusMarker.createLinePath(25, d.position, d.height, renderSystem.y);
+                        return FocusMarker.createLinePath({x: 25, y: d.position, length: d.height, yConverter: renderSystem.y});
                     });
             }
         });
@@ -149,19 +151,22 @@ export class Focus extends Scene {
     updateMarkersData({totalLength, minimalLength, maximalLength, data}) {
 
         this.setTotalLength(totalLength);
-        this.setMinMaxSelection({min: 50, max: maximalLength});
+        this.setMinMaxSelection({min: this.MAIN_ELEMENT_SIZE, max: maximalLength});
         this.#setDefaultSelection();
-        this.yAxis.update(totalLength);
+        this.updateBoundaries()
+        this.yAxis.update(totalLength, -this.MAIN_ELEMENT_SIZE);
         this.#createMarkerClusters(data);
         this.render();
         this.brushSystem.moveBrush();
     }
 
     changeFocusArea = (boundaries) => {
-        this.brushSystem.moveBrush(boundaries);
+        this.brushSystem.moveBrush(boundaries)
     }
 
     checkSelectionValid(selectionDifference) {
+
+        selectionDifference = Math.round(selectionDifference);
 
         if (selectionDifference < this.minBrushSelection) {
             return false
@@ -170,5 +175,7 @@ export class Focus extends Scene {
         return selectionDifference <= this.maxBrushSelection;
     }
 
-
+    updateBoundaries() {
+        this.brushSystem.moveBrushToDefault()
+    }
 }

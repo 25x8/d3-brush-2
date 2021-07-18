@@ -11,6 +11,7 @@ export class D3Module {
     FOCUS_WIDTH = 50;
     FOCUS_SELECTOR = 'd3-module-focus';
     CONTEXT_SELECTOR = 'd3-module-context';
+    MAIN_ELEMENT_SIZE = 50;
 
     container;
     moduleContainer;
@@ -54,6 +55,10 @@ export class D3Module {
         this.context.updateData(updatedLengthAndData)
     }
 
+    selectElement(id) {
+        this.context.selectElement(id)
+    }
+
     #createHTMLScenes({selector, width, height}) {
 
         this.container = selector instanceof Object
@@ -88,15 +93,13 @@ export class D3Module {
 
     #createSVGScenes(data) {
 
-
-
         const calculatedLengthAndData = calculateElementsPosition({
             data,
             height: this.moduleContainer.offsetHeight
         });
-     this.#addMainElement(calculatedLengthAndData);
 
 
+        this.#addMainElement(calculatedLengthAndData);
         this.#createSVGFocus(calculatedLengthAndData);
         this.#createSVGContext(calculatedLengthAndData);
     }
@@ -104,17 +107,18 @@ export class D3Module {
     #createSVGFocus(data) {
 
         this.focus = new Focus(document.getElementById(this.FOCUS_SELECTOR));
+        this.focus.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.focus.init(data);
     }
 
     #createSVGContext(data) {
 
         this.context = new Context(document.getElementById(this.CONTEXT_SELECTOR));
+        this.context.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.context.init(data);
     }
 
     #initFocusBrush() {
-
         const {brushSystem} = this.focus;
 
         brushSystem.moveBrushToDefault();
@@ -125,12 +129,14 @@ export class D3Module {
         this.context.externalEvent = this.focus.changeFocusArea
     }
 
-    #addMainElement({data}) {
+    #addMainElement({data, totalLength}) {
+
         data.unshift({
             "id": "main-element",
             "status": null,
             "work": 0,
-            "height": 50,
+            "height": this.MAIN_ELEMENT_SIZE,
+            "position": -this.MAIN_ELEMENT_SIZE,
             "type": "main",
         });
 

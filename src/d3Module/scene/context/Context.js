@@ -6,6 +6,7 @@ import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../img/icons/test.svg';
+import {drawRectangle} from "../../utils/drawElement";
 
 
 export class Context extends Scene {
@@ -19,6 +20,8 @@ export class Context extends Scene {
     }
 
     init({totalLength, minimalLength, data}) {
+
+        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE);
 
         this.elementsData = data;
         this.visibleElements = data;
@@ -93,19 +96,35 @@ export class Context extends Scene {
 
                 const context = this;
 
-                enter.each(function(element, index){
+                enter.each(function (element, index) {
 
-                    if(element.id === 'main-element') {
-                         d3.select(this)
+                    if (element.id === 'main-element') {
+
+                        d3.select(this)
                             .append('image')
                             .attr('xlink:href', mainElementSvg)
                             .attr('class', renderSystem.selector)
                             .attr('width', context.yAxis.y(element.height + startAxisPosition))
                             .attr('height', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('x',  (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
-                            .attr('y', context.yAxis.y(-50))
-                            .attr('fill',  getColor(index))
+                            .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
+                            .attr('y', context.yAxis.y(element.position))
+                            .attr('fill', getColor(index))
                             .attr('stroke', 'black');
+
+                    } else if (element.type === 'k') {
+
+                        d3.select(this)
+                            .append('g')
+                            .attr('class', renderSystem.selector)
+                            .append('path')
+                            .attr('d', drawRectangle({
+                                x: (context.width / 2),
+                                y: context.yAxis.y(element.position),
+                                width: context.yAxis.y(element.height + startAxisPosition),
+                                height: context.yAxis.y(element.width + startAxisPosition)
+                            }))
+                            .attr('stroke', '#b47e94')
+                            .attr('fill', (d, index) => getColor(index));
 
                     } else {
 
@@ -133,55 +152,35 @@ export class Context extends Scene {
                     }
                 })
 
-                // const svgImage = enter.append('svg')
-                //     .attr('viewBox', d => {
-                //         const els = elementsConfig.find(el => el.id === d.type);
-                //         if (els) {
-                //             return els.viewBox
-                //         }
-                //     })
-                //     .attr('class', renderSystem.selector)
-                //     .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
-                //     .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
-                //     .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
-                //     .attr('y', d => this.yAxis.y(d.position))
-                //     .attr('fill', (d, index) => getColor(index))
-                //     .attr('stroke', 'black');
-                //
-                // svgImage.append('use')
-                //     .attr('href', d => {
-                //         if (d.type !== 'k')
-                //             return `#${d.type}`
-                //     });
             },
             update: (update) => {
 
                 const startAxisPosition = this.yAxis.getStartPosition();
-
                 const context = this;
 
-                update.each(function(element, index) {
+                update.each(function (element) {
 
-                    if (element.id === 'main-element') {
+                    if (element.type === 'k') {
+
                         d3.select(this)
-                            .attr('width', d => context.yAxis.y(d.height + startAxisPosition))
-                            .attr('height', d => context.yAxis.y(d.height + startAxisPosition))
-                            .attr('x', d => (context.width / 2) - (context.yAxis.y(d.height + startAxisPosition) / 2))
-                            .attr('y', d => context.yAxis.y(-50))
+                            .select('path')
+                            .attr('d', drawRectangle({
+                                x: (context.width / 2),
+                                y: context.yAxis.y(element.position),
+                                width: context.yAxis.y(element.height + startAxisPosition),
+                                height: context.yAxis.y(element.width + startAxisPosition)
+                            }));
                     } else {
-                        d3.select(this)
-                            .attr('width', d => context.yAxis.y(d.height + startAxisPosition))
-                            .attr('height', d => context.yAxis.y(d.height + startAxisPosition))
-                            .attr('x', d => (context.width / 2) - (context.yAxis.y(d.height + startAxisPosition) / 2))
-                            .attr('y', d => context.yAxis.y(d.position))
-                    }
-                })
 
-                // update
-                //     .attr('width', d => this.yAxis.y(d.height + startAxisPosition))
-                //     .attr('height', d => this.yAxis.y(d.height + startAxisPosition))
-                //     .attr('x', d => (this.width / 2) - (this.yAxis.y(d.height + startAxisPosition) / 2))
-                //     .attr('y', d => this.yAxis.y(d.position))
+                        d3.select(this)
+                            .attr('width', context.yAxis.y(element.height + startAxisPosition))
+                            .attr('height', context.yAxis.y(element.height + startAxisPosition))
+                            .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
+                            .attr('y', context.yAxis.y(element.position))
+                    }
+                });
+
+
             },
         });
 
@@ -200,7 +199,7 @@ export class Context extends Scene {
         let leftPos = this.bisect.center(this.elementsData, boundaries[0]);
         const rightPos = this.bisect.right(this.elementsData, boundaries[1]);
 
-        leftPos > 0 && (leftPos -= 1)
+        leftPos > 0 && (leftPos -= 1);
 
         if (leftPos === rightPos) {
             this.visibleElements = this.elementsData[leftPos - 1];
@@ -211,11 +210,22 @@ export class Context extends Scene {
 
     updateData({data, minimalLength, totalLength}) {
 
+        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE);
+
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
         this.elementsData = data;
         this.visibleElements = data;
         this.render();
+    }
+
+    selectElement(id) {
+        try {
+            const {position} = this.elementsData.find(el => el.id === id);
+            this.externalEvent([position, position + this.minBrushSelection])
+        } catch (e) {
+            alert('Выбранный элемент не найден')
+        }
     }
 
 }

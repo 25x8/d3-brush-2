@@ -1,4 +1,4 @@
-window.tmp = [
+window.tmpUpdate = [
     {
         "id": "cf705e80-6545-11ea-abb9-a3c39d5d1e66",
         "status": null,
@@ -101,7 +101,7 @@ window.tmp = [
     }
 ]
 
-window.tmpUpdate = [
+window.tmp = [
     {
         "id": "cf705e80-6545-11ea-abb9-a3c39d5d1e66",
         "status": null,

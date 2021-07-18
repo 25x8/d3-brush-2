@@ -23,6 +23,7 @@ export function calculateElementsPosition({data, height}) {
         return Object.assign({}, el);
     });
 
+
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 
     return {

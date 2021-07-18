@@ -1,7 +1,7 @@
 import * as d3 from '../../utils/d3Lib'
 
 export class FocusMarker {
-    static createLinePath(x, y, length, yConverter) {
+    static createLinePath({x, y, length, yConverter}) {
 
         const yConverted = yConverter(y);
         const lengthConverted = yConverter(y + length);

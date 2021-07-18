@@ -21,6 +21,10 @@ d3module.initScene({
     data: d3_data
 })
 
+window.select = (id) => {
+    d3module.selectElement(id)
+}
+
 window.resize = (size) => {
     d3module.resizeScene(size)
 }
