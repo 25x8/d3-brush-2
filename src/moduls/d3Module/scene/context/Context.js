@@ -7,7 +7,7 @@ import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../../img/icons/test.svg';
 import {drawRectangle} from "../../utils/drawElement";
-import {TYPE_K} from "../../../../index";
+import {SELECT_COLOR, TYPE_K} from "../../../../index";
 
 
 export class Context extends Scene {
@@ -89,31 +89,57 @@ export class Context extends Scene {
         this.hoverline = d3.select('#hover-line');
 
         this.svg
-            .on('mouseover', () => {
+            .on('mouseover', (e) => {
+
                 this.tooltip.show();
                 this.hoverline.classed('active', true);
             })
             .on('mousemove', (e) => {
-                let {clientX: currentX, clientY: currentY} = e;
+                this.#renderTooltipAndHoverine(e);
 
-                const hoveringMeter = this.yAxis.y.invert(currentY);
-
-                if (hoveringMeter !== -1 && hoveringMeter > this.totalLength) {
-                    return undefined
-                }
-
-                const index = this.bisect.left(this.elementsData, hoveringMeter) - 2
-
-
-                this.hoverline.style('top', `${currentY}px`);
-                this.tooltip.setContent(Scheme2D.getTooltip(index));
-                this.tooltip.setPosition(currentX, currentY);
             })
             .on('mouseout', () => {
+
                 this.tooltip.hide();
+                this.tooltip.removeHoverColor();
                 this.hoverline.classed('active', false);
+                this.render()
+            })
+            .on('wheel', (e, s) => {
+                const {deltaY} = e;
+                this.externalEvent(deltaY);
+                const renderWhileWheeling = setInterval(() => {
+                    this.#renderTooltipAndHoverine(e);
+                }, 25);
+
+                setTimeout(() => { clearInterval(renderWhileWheeling); }, 300);
+
             })
     }
+
+    #renderTooltipAndHoverine(e) {
+        let {clientX: currentX, clientY: currentY} = e;
+
+        const hoveringMeter = this.yAxis.y.invert(currentY);
+
+        if (hoveringMeter >= -1 && hoveringMeter > this.totalLength || hoveringMeter < -50) {
+            return undefined;
+        }
+
+        const index = this.bisect.left(this.elementsData, hoveringMeter) - 1;
+
+        this.hoverline.style('top', `${currentY}px`);
+
+        this.tooltip.setContent({
+            content: Scheme2D.getTooltip(index),
+            element: this.elementsData[index]
+        });
+
+        this.tooltip.setPosition(currentX, currentY);
+
+        this.render()
+    }
+
 
     #initRenderFunction() {
 
@@ -204,7 +230,7 @@ export class Context extends Scene {
                                 width: context.yAxis.y(element.height + startAxisPosition),
                                 height: context.yAxis.y(element.width + startAxisPosition)
                             }))
-                            .attr('fill', element.select ? 'red' : getColor(index));
+                            .attr('fill', element.select ? SELECT_COLOR : getColor(index));
                     } else {
 
                         d3.select(this)
@@ -212,7 +238,7 @@ export class Context extends Scene {
                             .attr('height', context.yAxis.y(element.height + startAxisPosition))
                             .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
                             .attr('y', context.yAxis.y(element.position))
-                            .attr('fill', element.select ? 'red' : getColor(index))
+                            .attr('fill', element.hovered ? 'yellow' : element.select ? SELECT_COLOR : getColor(index))
                     }
 
                 });

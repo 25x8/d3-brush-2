@@ -4,7 +4,7 @@ export default class Tooltip {
     currentWidth;
     currentHeight;
     delta = 20;
-    margin = 210;
+    lastElement;
 
     constructor(selector) {
         this.container = document.querySelector(selector);
@@ -25,8 +25,10 @@ export default class Tooltip {
         this.container.style.transform = `translate(${x}px, ${y}px)`;
     }
 
-    setContent = (content) => {
+    setContent = ({content, element}) => {
         this.container.innerHTML = content;
+        this.removeHoverColor();
+        this.setHoverColor(element);
 
         const  { width, height } = this.container.getBoundingClientRect();
 
@@ -41,7 +43,15 @@ export default class Tooltip {
 
     topCollision = (offsetY) => {
         return  offsetY - this.currentHeight
+    }
 
+    removeHoverColor() {
+        this.lastElement && (this.lastElement.hovered = false);
+    }
+
+    setHoverColor(element) {
+        element && (element.hovered = true);
+        this.lastElement = element;
     }
 
 }

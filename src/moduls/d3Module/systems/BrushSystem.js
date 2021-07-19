@@ -39,7 +39,10 @@ export class BrushSystem {
     moveBrush(boundaries) {
 
         if (boundaries) {
-            this.setCurrentSelection(boundaries);
+
+            Array.isArray(boundaries)
+                ? this.setCurrentSelection(boundaries)
+                : this.setSelectionFromWheel(boundaries);
 
             this.brush
                 .transition()
@@ -65,6 +68,11 @@ export class BrushSystem {
 
     setDefaultSelection(boundaries) {
         this.defaultSelection = boundaries;
+    }
+
+    setSelectionFromWheel(deltaY) {
+
+        this.currentSelection = this.currentSelection.map(el => el + deltaY);
     }
 
     getCurrentSelection() {
