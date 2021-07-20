@@ -105,15 +105,24 @@ export class Context extends Scene {
                 this.hoverline.classed('active', false);
                 this.render()
             })
-            .on('wheel', (e, s) => {
+            .on('wheel', (e) => {
                 const {deltaY} = e;
-                this.externalEvent(deltaY);
                 const renderWhileWheeling = setInterval(() => {
                     this.#renderTooltipAndHoverine(e);
                 }, 25);
+                setTimeout(() => {
+                    clearInterval(renderWhileWheeling);
+                }, 300);
 
-                setTimeout(() => { clearInterval(renderWhileWheeling); }, 300);
+                const newTopBorder = this.yAxis.y.invert(e.clientY) + deltaY;
 
+                if (newTopBorder > this.totalLength) {
+                    this.externalEvent(this.totalLength - this.yAxis.y.invert(e.clientY))
+                } else if (newTopBorder < 0) {
+                    this.externalEvent(-this.yAxis.y.invert(e.clientY))
+                } else {
+                    this.externalEvent(deltaY)
+                }
             })
     }
 
@@ -131,7 +140,7 @@ export class Context extends Scene {
         this.hoverline.style('top', `${currentY}px`);
 
         this.tooltip.setContent({
-            content: Scheme2D.getTooltip(index),
+            content: Scheme2D.getTooltip(index - 1),
             element: this.elementsData[index]
         });
 
@@ -230,7 +239,7 @@ export class Context extends Scene {
                                 width: context.yAxis.y(element.height + startAxisPosition),
                                 height: context.yAxis.y(element.width + startAxisPosition)
                             }))
-                            .attr('fill', element.select ? SELECT_COLOR : getColor(index));
+                            .attr('fill', element.hovered ? 'yellow' : element.select ? SELECT_COLOR : getColor(index))
                     } else {
 
                         d3.select(this)

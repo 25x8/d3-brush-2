@@ -71,7 +71,6 @@ export class BrushSystem {
     }
 
     setSelectionFromWheel(deltaY) {
-
         this.currentSelection = this.currentSelection.map(el => el + deltaY);
     }
 
