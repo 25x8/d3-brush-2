@@ -82,6 +82,11 @@ export class Context extends Scene {
                 }
             }
         });
+
+        this.brushSystem.setWheelBoundariesSelection({
+            min: this.MAIN_ELEMENT_SIZE,
+            max: this.totalLength
+        });
     }
 
     #initMouseEvents() {
@@ -106,20 +111,22 @@ export class Context extends Scene {
                 this.render()
             })
             .on('wheel', (e) => {
+
                 const {deltaY} = e;
                 const renderWhileWheeling = setInterval(() => {
                     this.#renderTooltipAndHoverine(e);
                 }, 25);
+
                 setTimeout(() => {
                     clearInterval(renderWhileWheeling);
-                }, 300);
+                }, 200);
 
                 const newTopBorder = this.yAxis.y.invert(e.clientY) + deltaY;
 
                 if (newTopBorder > this.totalLength) {
                     this.externalEvent(this.totalLength - this.yAxis.y.invert(e.clientY))
-                } else if (newTopBorder < 0) {
-                    this.externalEvent(-this.yAxis.y.invert(e.clientY))
+                } else if (newTopBorder < -50) {
+                    return false;
                 } else {
                     this.externalEvent(deltaY)
                 }

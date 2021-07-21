@@ -77,6 +77,11 @@ export class Focus extends Scene {
                 }
             }
         });
+
+        this.brushSystem.setWheelBoundariesSelection({
+            min: this.MAIN_ELEMENT_SIZE,
+            max: this.totalLength
+        });
     }
 
     #setDefaultSelection() {

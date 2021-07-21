@@ -7,6 +7,8 @@ export class BrushSystem {
     yConverter;
     defaultSelection;
     currentSelection;
+    minSelection;
+    maxSelection;
 
     constructor({svg, delta = 0, yConverter, onBrush, onBrushEnd}) {
 
@@ -16,7 +18,7 @@ export class BrushSystem {
         this.svg = svg;
 
         this.brushArea = d3.brushY()
-            // .extent([[0, delta], [width, height - delta]])
+            .extent([[0, delta], [width, height - delta]])
             .on('brush', onBrush)
             .on('end', onBrushEnd);
 
@@ -31,7 +33,7 @@ export class BrushSystem {
     resize({width, height, delta = 0}) {
 
         this.defaultSelection = [delta, height - delta];
-        // this.brushArea.extent([[0, delta], [width, height - delta]]);
+        this.brushArea.extent([[0, delta], [width, height - delta]]);
         this.brush.call(this.brushArea);
 
     }
@@ -70,8 +72,30 @@ export class BrushSystem {
         this.defaultSelection = boundaries;
     }
 
+    setWheelBoundariesSelection({min, max}) {
+        this.minSelection = min;
+        this.maxSelection = max;
+    }
+
     setSelectionFromWheel(deltaY) {
+
         this.currentSelection = this.currentSelection.map(el => el + deltaY);
+
+        if(this.currentSelection[0] < -this.minSelection) {
+
+            const {selectionDifference} = this.getSelectionDifference(this.getCurrentSelection());
+
+            this.currentSelection[0] = -this.minSelection;
+            this.currentSelection[1] = -this.minSelection + selectionDifference;
+        }
+
+        if(this.currentSelection[1] > this.maxSelection) {
+
+            const {selectionDifference} = this.getSelectionDifference(this.getCurrentSelection());
+
+            this.currentSelection[0] = this.maxSelection - selectionDifference;
+            this.currentSelection[1] = this.maxSelection;
+        }
     }
 
     getCurrentSelection() {
