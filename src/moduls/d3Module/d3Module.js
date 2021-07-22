@@ -23,7 +23,7 @@ export class D3Module {
     initScene({selector, width, height, data}) {
         this.#createHTMLScenes({selector, width, height});
         this.#createSVGScenes(data);
-        this.#createTooltip()
+        this.#createTooltip();
         this.#linkScenes();
         this.moveBrushToDefault();
     }
@@ -102,7 +102,7 @@ export class D3Module {
 
         const htmlHoverLine = createHTMLElement({name: 'hover-line'});
 
-        htmlContext.prepend(htmlHoverLine);
+        htmlContext.prepend(htmlHoverLine, htmlTooltip);
 
         appendAllElementsToContainer({
             container: this.moduleContainer,
@@ -110,7 +110,7 @@ export class D3Module {
         });
 
 
-             document.querySelector('body').prepend(htmlTooltip);
+             // document.querySelector('body').prepend(htmlTooltip);
 
     }
 

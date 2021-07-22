@@ -91,13 +91,13 @@ export class Context extends Scene {
 
     #initMouseEvents() {
 
-        this.hoverline = d3.select('#hover-line');
+        this.hoverline = document.querySelector('#hover-line');
 
         this.svg
             .on('mouseover', (e) => {
 
                 this.tooltip.show();
-                this.hoverline.classed('active', true);
+                this.hoverline.classList.add('active');
             })
             .on('mousemove', (e) => {
                 this.#renderTooltipAndHoverine(e);
@@ -107,10 +107,11 @@ export class Context extends Scene {
 
                 this.tooltip.hide();
                 this.tooltip.removeHoverColor();
-                this.hoverline.classed('active', false);
+                this.hoverline.classList.remove('active');
                 this.render()
             })
             .on('wheel', (e) => {
+                e.preventDefault();
 
                 const {deltaY} = e;
                 const renderWhileWheeling = setInterval(() => {
@@ -134,7 +135,12 @@ export class Context extends Scene {
     }
 
     #renderTooltipAndHoverine(e) {
+
+        let {x, y} = this.svg.node().getBoundingClientRect()
         let {clientX: currentX, clientY: currentY} = e;
+
+        currentX -= x;
+        currentY -= y;
 
         const hoveringMeter = this.yAxis.y.invert(currentY);
 
@@ -144,7 +150,7 @@ export class Context extends Scene {
 
         const index = this.bisect.left(this.elementsData, hoveringMeter) - 1;
 
-        this.hoverline.style('top', `${currentY}px`);
+        this.hoverline.style.transform = `translateY(${currentY}px)`;
 
         this.tooltip.setContent({
             content: Scheme2D.getTooltip(index - 1),

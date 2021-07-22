@@ -13,13 +13,12 @@
 }
 
 #tooltip-context {
-    position: fixed;
+    position: absolute;
 }
 
 #hover-line {
     position: absolute;
     border: 1px dashed black;
-    top: 20px;
     display: none;
     pointer-events: none;
     width: 100%;
