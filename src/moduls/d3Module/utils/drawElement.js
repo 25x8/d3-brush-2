@@ -5,10 +5,10 @@ export const drawRectangle = ({x, y, width, height}) => {
 
     return line([
         [x, y],
-        [x + (height / 2), y],
-        [x + (height / 2), y + width],
-        [x - (height / 2), y + width],
-        [x - (height / 2), y],
+        [x + (width / 2), y],
+        [x + (width / 2), y + height],
+        [x - (width / 2), y + height],
+        [x - (width / 2), y],
         [x, y]
     ])
 }

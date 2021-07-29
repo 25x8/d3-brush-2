@@ -8,7 +8,7 @@ import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../../img/icons/test.svg';
 import {drawRectangle} from "../../utils/drawElement";
 import {SELECT_COLOR, TYPE_K} from "../../../../index";
-import {appendWarningIcon} from "../../utils/elementsTools";
+import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
 
 
 export class Context extends Scene {
@@ -96,7 +96,7 @@ export class Context extends Scene {
         this.hoverline = document.querySelector('#hover-line');
 
         this.svg
-            .on('mouseover', (e) => {
+            .on('mouseover', () => {
 
                 this.tooltip.show();
                 this.hoverline.classList.add('active');
@@ -179,13 +179,13 @@ export class Context extends Scene {
 
             enter: (enter) => {
 
-                let svgElement;
+
 
                 enter.each(function (elementData, index) {
 
                     if (elementData.id === 'main-element') {
 
-                        svgElement = d3.select(this).append('image');
+                        const svgElement = d3.select(this).append('image');
 
                         svgElement
                             .attr('xlink:href', mainElementSvg)
@@ -195,16 +195,17 @@ export class Context extends Scene {
 
                     } else if (elementData.type === TYPE_K) {
 
-                        const drawElement = d3.select(this)
-                            .append('g')
+                        const svgGroup = d3.select(this).append('g');
+
+                        const drawElement = svgGroup
                             .attr('class', renderSystem.selector)
                             .append('path');
 
-                        context.#setDrawElementPosition({elementData, drawElement, index});
+                        context.#setDrawElementPosition({elementData, drawElement, svgGroup, index});
 
                     } else {
 
-                        svgElement = d3.select(this).append('svg');
+                        const svgElement = d3.select(this).append('svg');
 
                         svgElement
                             .attr('class', renderSystem.selector)
@@ -220,11 +221,6 @@ export class Context extends Scene {
                         context.#setSVGElementPosition({svgElement, elementData, index})
                     }
 
-                    elementData.status && appendWarningIcon({
-                        element: svgElement,
-                        status: elementData.status,
-                        elementData
-                    })
 
                 });
 
@@ -236,9 +232,10 @@ export class Context extends Scene {
 
                     if (elementData.type === TYPE_K) {
 
-                        const drawElement = d3.select(this).select('path')
+                        const svgGroup = d3.select(this);
+                        const drawElement = svgGroup.select('path');
 
-                        context.#setDrawElementPosition({elementData, drawElement, index})
+                        context.#setDrawElementPosition({elementData, drawElement, svgGroup, index})
 
                     } else {
 
@@ -258,28 +255,47 @@ export class Context extends Scene {
     #setSVGElementPosition({svgElement, elementData, index}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
+        const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
 
         svgElement
-            .attr('width', this.yAxis.y(elementData.height + startAxisPosition))
-            .attr('height', this.yAxis.y(elementData.height + startAxisPosition))
-            .attr('x', (this.width / 2) - (this.yAxis.y(elementData.height + startAxisPosition) / 2))
+            .attr('width', interpolatedHeight)
+            .attr('height', interpolatedHeight)
+            .attr('x', (this.width / 2) - (interpolatedHeight / 2))
             .attr('y', this.yAxis.y(elementData.position))
             .attr('stroke', 'black')
             .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index));
+
+        elementData.status && appendWarningIcon({
+            element: svgElement,
+            status: elementData.status,
+            height: interpolatedHeight,
+            position: elementData.position
+        })
     }
 
-    #setDrawElementPosition({drawElement, elementData, index}) {
+    #setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
+        const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
+        const interpolatedWidth = this.yAxis.y(elementData.width + startAxisPosition);
+
 
         drawElement.attr('d', drawRectangle({
             x: (this.width / 2),
             y: this.yAxis.y(elementData.position),
-            width: this.yAxis.y(elementData.height + startAxisPosition),
-            height: this.yAxis.y(elementData.width + startAxisPosition)
+            width: interpolatedWidth,
+            height: interpolatedHeight
         }))
             .attr('stroke', 'black')
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index))
+            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index));
+
+        elementData.status && appendWarningIconToDrawingElement({
+            element: svgGroup,
+            status: elementData.status,
+            width: interpolatedWidth / 2,
+            x: (this.width / 2) - (elementData.width / 1.5),
+            y: this.yAxis.y(elementData.position) + elementData.height
+        })
     }
 
     changeContextArea = (boundaries) => {

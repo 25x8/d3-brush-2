@@ -115,7 +115,7 @@ window.tmp = [
         }
     }, {
         "id": "cf3cbde0-6545-11ea-9059-a55ec199cee1",
-        "status": null,
+        "status": "warning",
         "work": 0,
         "length": 9.055,
         "type": "1",
@@ -4692,7 +4692,7 @@ window.tmp = [
         }
     }, {
         "id": "004e4aa0-6549-11ea-9f0a-e1895bdb786a",
-        "status": null,
+        "status": "danger",
         "work": 0,
         "length": 9.055,
         "type": "1",
@@ -4761,7 +4761,7 @@ window.tmp = [
         }
     }, {
         "id": "k_5",
-        "status": null,
+        "status": "danger",
         "length": 9.66,
         "type": "k",
         "diameter": 10,
@@ -4827,7 +4827,7 @@ window.tmp = [
         }
     }, {
         "id": "k_11",
-        "status": null,
+        "status": "danger",
         "length": 230,
         "type": "k",
         "diameter": 10,
