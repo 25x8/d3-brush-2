@@ -8,6 +8,7 @@ import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../../img/icons/test.svg';
 import {drawRectangle} from "../../utils/drawElement";
 import {SELECT_COLOR, TYPE_K} from "../../../../index";
+import {appendWarningIcon} from "../../utils/elementsTools";
 
 
 export class Context extends Scene {
@@ -178,11 +179,13 @@ export class Context extends Scene {
 
             enter: (enter) => {
 
+                let svgElement;
+
                 enter.each(function (elementData, index) {
 
                     if (elementData.id === 'main-element') {
 
-                        const svgElement = d3.select(this).append('image');
+                        svgElement = d3.select(this).append('image');
 
                         svgElement
                             .attr('xlink:href', mainElementSvg)
@@ -201,7 +204,7 @@ export class Context extends Scene {
 
                     } else {
 
-                        const svgElement = d3.select(this).append('svg');
+                        svgElement = d3.select(this).append('svg');
 
                         svgElement
                             .attr('class', renderSystem.selector)
@@ -212,11 +215,17 @@ export class Context extends Scene {
                                 }
                             });
 
-
                         svgElement.append('use').attr('href', d => `#${d.type}`)
 
                         context.#setSVGElementPosition({svgElement, elementData, index})
                     }
+
+                    elementData.status && appendWarningIcon({
+                        element: svgElement,
+                        status: elementData.status,
+                        elementData
+                    })
+
                 });
 
             },

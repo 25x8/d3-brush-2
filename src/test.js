@@ -1,7 +1,7 @@
 window.tmpUpdate = [
     {
         "id": "cf705e80-6545-11ea-abb9-a3c39d5d1e66",
-        "status": null,
+        "status": "danger",
         "work": 0,
         "length": 9.055,
         "type": "1",
@@ -104,7 +104,7 @@ window.tmpUpdate = [
 window.tmp = [
     {
         "id": "cf705e80-6545-11ea-abb9-a3c39d5d1e66",
-        "status": null,
+        "status": "danger",
         "work": 0,
         "length": 9.055,
         "type": "1",

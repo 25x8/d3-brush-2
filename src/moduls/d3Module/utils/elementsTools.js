@@ -1,4 +1,8 @@
+import warningSign from '../../../img/icons/warning.svg';
+import dangerSign from '../../../img/icons/alarm.svg';
+
 const MIN_PX = 10;
+
 
 export function createHTMLElement({name, width, height}) {
     const el = document.createElement('div');
@@ -49,4 +53,13 @@ export function calculateMaximumLength({minimalLength, totalLength, height}) {
 
     // max visible length
     return  totalLength / elementsInMinPxs;
+}
+
+export function appendWarningIcon({element, status, elementData}){
+    console.log(elementData)
+    element.append('image')
+        .attr('href', status === "danger" ? dangerSign : warningSign )
+        .attr('height', 400)
+        .attr('x',  elementData.height / 2)
+        .attr('y', elementData.position + (elementData.height / 2));
 }
