@@ -4,6 +4,8 @@ import {YAxis} from "../../systems/yAxis";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
+import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
+import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
 
@@ -103,12 +105,22 @@ export class Focus extends Scene {
             const partStep = data.length / this.PARTS_NUMBER;
             const partLength = totalLength / this.PARTS_NUMBER;
 
-            for (let i = 0; i < this.PARTS_NUMBER; i++) {
+            for (let i = 1; i <= this.PARTS_NUMBER; i++) {
 
                 const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
 
+                let warningSignal =  null;
+
+                for(let j =  Math.round(partStep * (i - 1)) + 1; j < Math.round(partStep * i); j++) {
+                    const status = data[j].status;
+                    if(status) {
+                        warningSignal !== 'danger' && (warningSignal = status);
+                    }
+                }
+
+                warningSignal && (nextItem.status = warningSignal);
                 nextItem.height = partLength;
-                nextItem.position = partLength * i;
+                nextItem.position = partLength * (i - 1);
 
                 clusters.push(nextItem);
             }
@@ -117,6 +129,7 @@ export class Focus extends Scene {
         } else {
             this.markersData = data;
         }
+
     }
 
     #initRenderFunction() {
@@ -127,26 +140,53 @@ export class Focus extends Scene {
             selector: 'd3-module-focus-marker'
         });
 
+        const focus = this;
+
         renderSystem.initRenderFunctions({
 
             enter: (enter) => {
-                const g = enter.append('g')
-                    .attr('class', renderSystem.selector);
 
-                g.append('path')
-                    .attr('d', d => {
-                        return FocusMarker.createLinePath({x: 25, y: d.position, length: d.height, yConverter: renderSystem.y});
+                enter.each(function (elementData) {
+
+                    const svgGroup = d3.select(this).append('g');
+                    svgGroup.attr('class', renderSystem.selector);
+
+                    const drawElement = svgGroup.append('path');
+
+                    drawElement.attr('d', d => {
+                        return FocusMarker.createLinePath({
+                            x: 25,
+                            y: d.position,
+                            length: d.height,
+                            yConverter: renderSystem.y
+                        });
                     })
-                    .attr('stroke', '#b47e94')
-                    .attr('fill', (d, index) => {
-                        return d.color || getColor(index)
-                    });
+                        .attr('stroke', '#b47e94')
+                        .attr('fill', (d, index) => {
+                            return d.color || getColor(index)
+                        });
+
+
+                    elementData.status && appendWarningIconToDrawingElement({
+                        element: svgGroup,
+                        status: elementData.status,
+                        width: focus.yAxis.y(elementData.height) / 2,
+                        x: (25 / 2) + 5,
+                        y: focus.yAxis.y(elementData.position)
+                    })
+
+                })
 
             },
             update: (update) => {
                 update.select('path')
                     .attr('d', d => {
-                        return FocusMarker.createLinePath({x: 25, y: d.position, length: d.height, yConverter: renderSystem.y});
+                        return FocusMarker.createLinePath({
+                            x: 25,
+                            y: d.position,
+                            length: d.height,
+                            yConverter: renderSystem.y
+                        });
                     })
                     .attr('fill', (d, index) => {
                         return d.color || getColor(index)

@@ -179,8 +179,6 @@ export class Context extends Scene {
 
             enter: (enter) => {
 
-
-
                 enter.each(function (elementData, index) {
 
                     if (elementData.id === 'main-element') {
@@ -196,10 +194,9 @@ export class Context extends Scene {
                     } else if (elementData.type === TYPE_K) {
 
                         const svgGroup = d3.select(this).append('g');
+                        svgGroup.attr('class', renderSystem.selector)
 
-                        const drawElement = svgGroup
-                            .attr('class', renderSystem.selector)
-                            .append('path');
+                        const drawElement = svgGroup.append('path');
 
                         context.#setDrawElementPosition({elementData, drawElement, svgGroup, index});
 
