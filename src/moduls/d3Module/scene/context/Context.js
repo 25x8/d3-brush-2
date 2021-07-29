@@ -31,6 +31,7 @@ export class Context extends Scene {
 
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
+
         this.#appendElementsImages();
         this.#initYAxis();
         this.#initBrush();
@@ -171,96 +172,70 @@ export class Context extends Scene {
             selector: 'd3-module-context-element'
         });
 
+        const context = this;
+
         renderSystem.initRenderFunctions({
 
             enter: (enter) => {
 
-                const startAxisPosition = this.yAxis.getStartPosition();
-                const context = this;
+                enter.each(function (elementData, index) {
 
-                enter.each(function (element, index) {
+                    if (elementData.id === 'main-element') {
 
-                    if (element.id === 'main-element') {
+                        const svgElement = d3.select(this).append('image');
 
-                        d3.select(this)
-                            .append('image')
+                        svgElement
                             .attr('xlink:href', mainElementSvg)
-                            .attr('class', renderSystem.selector)
-                            .attr('width', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('height', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
-                            .attr('y', context.yAxis.y(element.position))
-                            .attr('fill', getColor(index))
-                            .attr('stroke', 'black');
+                            .attr('class', renderSystem.selector);
 
-                    } else if (element.type === TYPE_K) {
+                        context.#setSVGElementPosition({svgElement, elementData, index});
 
-                        d3.select(this)
+                    } else if (elementData.type === TYPE_K) {
+
+                        const drawElement = d3.select(this)
                             .append('g')
                             .attr('class', renderSystem.selector)
-                            .append('path')
-                            .attr('d', drawRectangle({
-                                x: (context.width / 2),
-                                y: context.yAxis.y(element.position),
-                                width: context.yAxis.y(element.height + startAxisPosition),
-                                height: context.yAxis.y(element.width + startAxisPosition)
-                            }))
-                            .attr('stroke', '#b47e94')
-                            .attr('fill', (d, index) => getColor(index));
+                            .append('path');
+
+                        context.#setDrawElementPosition({elementData, drawElement, index});
 
                     } else {
 
-                        const svgImage = d3.select(this)
-                            .append('svg')
+                        const svgElement = d3.select(this).append('svg');
+
+                        svgElement
+                            .attr('class', renderSystem.selector)
                             .attr('viewBox', d => {
                                 const els = elementsConfig.find(el => el.id === d.type);
                                 if (els) {
                                     return els.viewBox
                                 }
-                            })
-                            .attr('class', renderSystem.selector)
-                            .attr('width', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('height', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
-                            .attr('y', context.yAxis.y(element.position))
-                            .attr('fill', getColor(index))
-                            .attr('stroke', 'black');
-
-                        svgImage.append('use')
-                            .attr('href', d => {
-                                if (d.type !== 'k')
-                                    return `#${d.type}`
                             });
+
+
+                        svgElement.append('use').attr('href', d => `#${d.type}`)
+
+                        context.#setSVGElementPosition({svgElement, elementData, index})
                     }
-                })
+                });
 
             },
             update: (update) => {
 
-                const startAxisPosition = this.yAxis.getStartPosition();
-                const context = this;
 
-                update.each(function (element, index) {
+                update.each(function (elementData, index) {
 
-                    if (element.type === TYPE_K) {
+                    if (elementData.type === TYPE_K) {
 
-                        d3.select(this)
-                            .select('path')
-                            .attr('d', drawRectangle({
-                                x: (context.width / 2),
-                                y: context.yAxis.y(element.position),
-                                width: context.yAxis.y(element.height + startAxisPosition),
-                                height: context.yAxis.y(element.width + startAxisPosition)
-                            }))
-                            .attr('fill', element.hovered ? 'yellow' : element.select ? SELECT_COLOR : getColor(index))
+                        const drawElement = d3.select(this).select('path')
+
+                        context.#setDrawElementPosition({elementData, drawElement, index})
+
                     } else {
 
-                        d3.select(this)
-                            .attr('width', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('height', context.yAxis.y(element.height + startAxisPosition))
-                            .attr('x', (context.width / 2) - (context.yAxis.y(element.height + startAxisPosition) / 2))
-                            .attr('y', context.yAxis.y(element.position))
-                            .attr('fill', element.hovered ? 'yellow' : element.select ? SELECT_COLOR : getColor(index))
+                        const svgElement = d3.select(this);
+
+                        context.#setSVGElementPosition({svgElement, elementData, index});
                     }
 
                 });
@@ -269,6 +244,33 @@ export class Context extends Scene {
         });
 
         this.render = () => renderSystem.renderElements(this.visibleElements);
+    }
+
+    #setSVGElementPosition({svgElement, elementData, index}) {
+
+        const startAxisPosition = this.yAxis.getStartPosition();
+
+        svgElement
+            .attr('width', this.yAxis.y(elementData.height + startAxisPosition))
+            .attr('height', this.yAxis.y(elementData.height + startAxisPosition))
+            .attr('x', (this.width / 2) - (this.yAxis.y(elementData.height + startAxisPosition) / 2))
+            .attr('y', this.yAxis.y(elementData.position))
+            .attr('stroke', 'black')
+            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index));
+    }
+
+    #setDrawElementPosition({drawElement, elementData, index}) {
+
+        const startAxisPosition = this.yAxis.getStartPosition();
+
+        drawElement.attr('d', drawRectangle({
+            x: (this.width / 2),
+            y: this.yAxis.y(elementData.position),
+            width: this.yAxis.y(elementData.height + startAxisPosition),
+            height: this.yAxis.y(elementData.width + startAxisPosition)
+        }))
+            .attr('stroke', 'black')
+            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index))
     }
 
     changeContextArea = (boundaries) => {
@@ -316,12 +318,12 @@ export class Context extends Scene {
 
             this.selectedElement && (this.selectedElement.select = false);
             this.selectedElement = this.elementsData.find(el => el.id === id);
-
             this.selectedElement.select = true;
 
             const {position} = this.selectedElement;
 
-            this.externalEvent([position, position + this.minBrushSelection])
+            this.externalEvent([position, position + this.minBrushSelection]);
+
         } catch (e) {
             alert('Выбранный элемент не найден')
         }

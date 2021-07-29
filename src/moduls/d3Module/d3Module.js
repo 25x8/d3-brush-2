@@ -110,7 +110,6 @@ export class D3Module {
         });
 
 
-             // document.querySelector('body').prepend(htmlTooltip);
 
     }
 
