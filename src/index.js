@@ -47,12 +47,13 @@ class Scheme2D extends Singleton {
 
         // инициализация плагина d3
 
-        const d3_data = data.map(({status, length, diameter, type, id}) => {
+        const d3_data = data.map(({status, length, diameter, type, id}, index) => {
 
             const newDatum = {
                 status,
                 type,
-                id
+                id,
+                color: getColor(index)
             }
 
             length && (newDatum.height = length);
@@ -81,16 +82,18 @@ class Scheme2D extends Singleton {
         }
 
         window.updateData = () => {
-            this.d3module.updateData(window.tmpUpdate.map(({id, status, length, diameter, type}) => {
-                    return {
-                        status,
-                        height: length,
-                        width: diameter,
-                        type,
-                        id
-                    }
+            Scheme2D.updateData([...window.tmp, {
+                "id": "cf3cbde0-6545-11ea-9059-a55ec199cee12345-2gfdv1",
+                "status": null,
+                "work": 0,
+                "length": 9.055,
+                "type": "1",
+                "data": {
+                    "depth": 18110,
+                    "alert": null,
+                    "alert_text": null,
                 }
-            ));
+            }]);
         }
     }
 
@@ -151,13 +154,20 @@ class Scheme2D extends Singleton {
         let updateColorMap = false;
         let updateStatusMap = false;
         let update = false;
+
         if ((currentData.length === 0 && newData.length !== 0) || (currentData.length !== 0 && newData.length === 0) ) {
             update = true;
         } else {
+
+            if(currentData.length !== newData.length) {
+                update = true;
+            }
+
             try {
                 if (currentData[0].id !== newData[0].id) update = true;
             } catch (e) {}
         }
+
 
         // обновить данные класса
         Scheme2D.instance.data = newData;
@@ -167,20 +177,17 @@ class Scheme2D extends Singleton {
         // поменялась схема
         if (update) {
             // todo обновить схему
-            // const d3_data = newData.map(({status, length, type}) => ({status, width: length, type}))
-            const d3_data = newData.map(({status, length, diameter, type}) => ({status, width: length, height: diameter, type}))
+            const d3_data = newData.map(({status, length, diameter, type, }, index) => ({status, height: length, width: diameter, type, color: getColor(index)}))
             this.d3module.updateData(d3_data)
             if (Scheme2D.instance.select.id) Scheme2D.instance.selectItem();
         } else {
             // изминились данные
             newData.forEach(({[mode]: newVal, status: newStatus}, index) => {
-                console.log(`index`, index)
                 const currentVal = currentData[index][mode];
                 const currentStatus = currentData[index][mode];
-
+                const color = Scheme2D.getColor(index);
                 // обновить цвет элемента (за исключением выделеных элементов)
                 if (currentVal !== newVal && selectIndex !== index) {
-                    const color = Scheme2D.getColor(index);
                     this.d3module.updateColor({index, color});
                     updateColorMap = true;
                 }
@@ -243,15 +250,13 @@ class Scheme2D extends Singleton {
     static changeMode = (mode) => Scheme2D.instance.changeMode(mode);
     static selectItem = (id) => Scheme2D.instance.selectItem(id);
     static getMode = () => Scheme2D.instance.mode;
-    static updateData = (data) => Scheme2D.instance.updateData(window.tmp);
+    static updateData = (data) => Scheme2D.instance.updateData(data);
     static resize = (size) => Scheme2D.instance.resize(size);
     static toMaxZoom = () => Scheme2D.instance.toMaxZoom();
 
 }
 
 window.Scheme2D = Scheme2D;
-
-
 
 export {SELECT_COLOR, TYPE_K, TYPE_K_COLOR}
 export {Scheme2D};

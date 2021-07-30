@@ -4,7 +4,7 @@ import {YAxis} from "../../systems/yAxis";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
-import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
+import {appendWarningIconToDrawingElement} from "../../utils/elementsTools";
 import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
@@ -16,17 +16,18 @@ export class Focus extends Scene {
         super(container);
     }
 
-    init({totalLength, minimalLength, maximalLength, data}) {
+    init({totalLength, minimalLength, maximalLength, data, contextWidth}) {
 
-        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE)
+        this.#configureLength({
+            minimalLength, maximalLength, contextWidth, totalLength
+        });
 
-        this.setTotalLength(totalLength);
-        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
         this.#initYAxis();
         this.#initBrush();
         this.#setDefaultSelection();
         this.#createMarkerClusters(data);
         this.#initRenderFunction();
+
         this.render();
     }
 
@@ -52,10 +53,13 @@ export class Focus extends Scene {
             yConverter: this.yAxis.y,
             onBrush: ({selection}) => {
 
+
+
                 const {
                     convertedSelection,
                     selectionDifference
                 } = this.brushSystem.getSelectionDifference(selection);
+
 
                 if (this.checkSelectionValid(selectionDifference)) {
 
@@ -64,11 +68,10 @@ export class Focus extends Scene {
                 }
 
             },
-            onBrushEnd: (e) => {
-                const {selection} = e;
-
+            onBrushEnd: ({selection}) => {
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
+
                 } else {
 
                     const {selectionDifference} = this.brushSystem.getSelectionDifference(selection);
@@ -79,6 +82,7 @@ export class Focus extends Scene {
                 }
             }
         });
+
 
         this.brushSystem.setWheelBoundariesSelection({
             min: this.MAIN_ELEMENT_SIZE,
@@ -109,11 +113,11 @@ export class Focus extends Scene {
 
                 const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
 
-                let warningSignal =  null;
+                let warningSignal = null;
 
-                for(let j =  Math.round(partStep * (i - 1)) + 1; j < Math.round(partStep * i); j++) {
+                for (let j = Math.round(partStep * (i - 1)) + 1; j < Math.round(partStep * i); j++) {
                     const status = data[j].status;
-                    if(status) {
+                    if (status) {
                         warningSignal !== 'danger' && (warningSignal = status);
                     }
                 }
@@ -166,16 +170,15 @@ export class Focus extends Scene {
                             return d.color || getColor(index)
                         });
 
-
                     elementData.status && appendWarningIconToDrawingElement({
                         element: svgGroup,
                         status: elementData.status,
-                        width: focus.yAxis.y(elementData.height) / 2,
-                        x: (25 / 2) + 5,
+                        width: elementData.height,
+                        x: (focus.width / 4) + 5,
                         y: focus.yAxis.y(elementData.position)
-                    })
+                    });
 
-                })
+                });
 
             },
             update: (update) => {
@@ -197,17 +200,59 @@ export class Focus extends Scene {
         this.render = () => renderSystem.renderElements(this.markersData);
     }
 
+    #configureLength({minimalLength, maximalLength, contextWidth, totalLength}) {
 
-    updateMarkersData({totalLength, maximalLength, data}) {
+        minimalLength = this.#getMinimalLength({minimalLength, contextWidth});
 
-        this.setTotalLength(totalLength);
-        this.setMinMaxSelection({min: this.MAIN_ELEMENT_SIZE, max: maximalLength});
+        totalLength === 0 || totalLength < minimalLength
+            ? this.setTotalLength(minimalLength + this.MAIN_ELEMENT_SIZE)
+            : this.setTotalLength(totalLength)
+
+
+        if(!maximalLength || maximalLength < minimalLength) {
+            maximalLength = minimalLength
+        }
+
+        this.setMinMaxSelection({min: minimalLength, max: maximalLength});
+
+    }
+
+    #getMinimalLength({minimalLength, contextWidth}) {
+
+        if (minimalLength < this.MAIN_ELEMENT_SIZE) {
+
+            minimalLength = this.#calculateMinimalZoom({
+                contextWidth,
+                mainElementWidth: this.MAIN_ELEMENT_SIZE
+            });
+        }
+        return minimalLength;
+    }
+
+    #calculateMinimalZoom({contextWidth, mainElementWidth}) {
+        const minZoomRation = 1 - mainElementWidth / contextWidth;
+        return mainElementWidth * minZoomRation * 10;
+    }
+
+    updateMarkersData({totalLength, minimalLength, maximalLength, data, contextWidth}) {
+
+        this.#configureLength({
+            minimalLength, maximalLength, contextWidth, totalLength
+        });
+
+        this.yAxis.update(this.getTotalLength(), -this.MAIN_ELEMENT_SIZE);
         this.#setDefaultSelection();
-        this.updateBoundaries()
-        this.yAxis.update(totalLength, -this.MAIN_ELEMENT_SIZE);
         this.#createMarkerClusters(data);
+        this.updateBoundaries();
+
+        this.brushSystem.setWheelBoundariesSelection({
+            min: this.MAIN_ELEMENT_SIZE,
+            max: this.totalLength
+        });
+
         this.render();
         this.brushSystem.moveBrush();
+
     }
 
     updateColor({index, color}) {
@@ -231,6 +276,7 @@ export class Focus extends Scene {
     }
 
     updateBoundaries() {
+        this.totalLength < this.brushSystem.getCurrentSelection().map(this.yAxis.y.invert)[1] &&
         this.brushSystem.moveBrushToDefault()
     }
 }

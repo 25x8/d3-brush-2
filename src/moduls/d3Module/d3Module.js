@@ -22,7 +22,7 @@ export class D3Module {
 
     initScene({selector, width, height, data}) {
         this.#createHTMLScenes({selector, width, height});
-        this.#createSVGScenes(data);
+        this.#createSVGScenes(data, width);
         this.#createTooltip();
         this.#linkScenes();
         this.moveBrushToDefault();
@@ -54,7 +54,10 @@ export class D3Module {
 
         this.#addMainElement(updatedLengthAndData);
 
-        this.focus.updateMarkersData(updatedLengthAndData);
+        this.focus.updateMarkersData({
+            ...updatedLengthAndData,
+            contextWidth: this.context.width
+        });
         this.context.updateData(updatedLengthAndData)
     }
 
@@ -109,11 +112,9 @@ export class D3Module {
             elements: [htmlFocus, htmlContext]
         });
 
-
-
     }
 
-    #createSVGScenes(data) {
+    #createSVGScenes(data, width) {
 
         const calculatedLengthAndData = calculateElementsPosition({
             data,
@@ -121,12 +122,15 @@ export class D3Module {
         });
 
         this.#addMainElement(calculatedLengthAndData);
-        this.#createSVGFocus(calculatedLengthAndData);
+
+        this.#createSVGFocus({
+            ...calculatedLengthAndData,
+            contextWidth: width - this.FOCUS_WIDTH
+        });
         this.#createSVGContext(calculatedLengthAndData);
     }
 
     #createSVGFocus(data) {
-
         this.focus = new Focus(document.getElementById(this.FOCUS_SELECTOR));
         this.focus.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.focus.init(data);

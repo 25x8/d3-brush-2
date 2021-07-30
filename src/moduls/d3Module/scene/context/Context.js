@@ -102,8 +102,8 @@ export class Context extends Scene {
                 this.hoverline.classList.add('active');
             })
             .on('mousemove', (e) => {
-                this.#renderTooltipAndHoverine(e);
 
+                this.#renderTooltipAndHoverine(e);
             })
             .on('mouseout', () => {
 
@@ -194,7 +194,7 @@ export class Context extends Scene {
                     } else if (elementData.type === TYPE_K) {
 
                         const svgGroup = d3.select(this).append('g');
-                        svgGroup.attr('class', renderSystem.selector)
+                        svgGroup.attr('class', renderSystem.selector);
 
                         const drawElement = svgGroup.append('path');
 
@@ -206,6 +206,7 @@ export class Context extends Scene {
 
                         svgElement
                             .attr('class', renderSystem.selector)
+                            .attr('stroke', 'black')
                             .attr('viewBox', d => {
                                 const els = elementsConfig.find(el => el.id === d.type);
                                 if (els) {
@@ -215,7 +216,14 @@ export class Context extends Scene {
 
                         svgElement.append('use').attr('href', d => `#${d.type}`)
 
-                        context.#setSVGElementPosition({svgElement, elementData, index})
+                        context.#setSVGElementPosition({svgElement, elementData, index});
+
+                        elementData.status && appendWarningIcon({
+                            element: svgElement,
+                            status: elementData.status,
+                            height: context.yAxis.y(elementData.height + context.yAxis.getStartPosition()),
+                            position: elementData.position
+                        })
                     }
 
 
@@ -259,15 +267,7 @@ export class Context extends Scene {
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 2) - (interpolatedHeight / 2))
             .attr('y', this.yAxis.y(elementData.position))
-            .attr('stroke', 'black')
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index));
-
-        elementData.status && appendWarningIcon({
-            element: svgElement,
-            status: elementData.status,
-            height: interpolatedHeight,
-            position: elementData.position
-        })
+            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : elementData.color);
     }
 
     #setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
@@ -324,6 +324,12 @@ export class Context extends Scene {
 
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
+
+        this.brushSystem.setWheelBoundariesSelection({
+            min: this.MAIN_ELEMENT_SIZE,
+            max: this.totalLength
+        });
+
         this.elementsData = data;
         this.visibleElements = data;
         this.render();

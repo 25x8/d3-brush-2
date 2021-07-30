@@ -26,6 +26,7 @@ export default class Tooltip {
     }
 
     setContent = ({content, element}) => {
+
         this.container.innerHTML = content;
         this.removeHoverColor();
         this.setHoverColor(element);

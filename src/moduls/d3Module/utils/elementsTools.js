@@ -2,6 +2,7 @@ import warningSign from '../../../img/icons/warning.svg';
 import dangerSign from '../../../img/icons/alarm.svg';
 
 const MIN_PX = 10;
+const START_MIN = Number.MAX_SAFE_INTEGER;
 
 
 export function createHTMLElement({name, width, height}) {
@@ -15,7 +16,7 @@ export function createHTMLElement({name, width, height}) {
 export function calculateElementsPosition({data, height}) {
 
     let totalLength = 0;
-    let minimalLength = 100000;
+    let minimalLength = START_MIN;
 
     const dataWithCalculatedPosition = data.map(el => {
 
@@ -26,6 +27,8 @@ export function calculateElementsPosition({data, height}) {
 
         return Object.assign({}, el);
     });
+
+    minimalLength === START_MIN && (minimalLength = 0);
 
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 

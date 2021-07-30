@@ -11,13 +11,14 @@
 <script>
     Scheme2D.init({
         data: window.tmp,
+        // data: [],
         element: "#main-scene",
         mode: "work",
         description: {
             text: "main test"
         },
         size: {
-            width: 400,
+            width: 120,
             height: 391
         },
         fnTooltipItem: (data, mode) => `id: ${data.id}<br>val: ${data[mode]}`,

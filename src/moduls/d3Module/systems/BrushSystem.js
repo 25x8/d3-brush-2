@@ -51,6 +51,7 @@ export class BrushSystem {
                 .call(this.brushArea.move, this.getCurrentSelection());
 
         } else {
+
             this.brush
                 .call(this.brushArea.move, this.getCurrentSelection())
         }
