@@ -223,6 +223,7 @@ export class Focus extends Scene {
 
         this._setDefaultSelection();
         this.updateBoundaries();
+
         this.brushSystem.setWheelBoundariesSelection({
             min: this.MAIN_ELEMENT_SIZE,
             max: this.totalLength
@@ -283,7 +284,12 @@ export class Focus extends Scene {
         });
 
         this.render();
-        this.brushSystem.moveBrush();
+
+        try {
+            this.brushSystem.moveBrush();
+        } catch (e) {
+            this.brushSystem.moveBrushToDefault()
+        }
 
     }
 
