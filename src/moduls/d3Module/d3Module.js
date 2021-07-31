@@ -21,10 +21,10 @@ export class D3Module {
     focus;
 
     initScene({selector, width, height, data}) {
-        this.#createHTMLScenes({selector, width, height});
-        this.#createSVGScenes(data, width);
-        this.#createTooltip();
-        this.#linkScenes();
+        this.createHTMLScenes({selector, width, height});
+        this.createSVGScenes(data, width);
+        this.createTooltip();
+        this.linkScenes();
         this.moveBrushToDefault();
     }
 
@@ -52,7 +52,7 @@ export class D3Module {
             height: this.moduleContainer.offsetHeight
         });
 
-        this.#addMainElement(updatedLengthAndData);
+        this.addMainElement(updatedLengthAndData);
 
         this.context.updateData(updatedLengthAndData)
 
@@ -76,7 +76,7 @@ export class D3Module {
         this.moveBrushToDefault();
     }
 
-    #createHTMLScenes({selector, width, height}) {
+    createHTMLScenes({selector, width, height}) {
 
         this.container = selector instanceof Object
             ? selector
@@ -115,36 +115,36 @@ export class D3Module {
 
     }
 
-    #createSVGScenes(data, width) {
+    createSVGScenes(data, width) {
 
         const calculatedLengthAndData = calculateElementsPosition({
             data,
             height: this.moduleContainer.offsetHeight
         });
 
-        this.#addMainElement(calculatedLengthAndData);
+        this.addMainElement(calculatedLengthAndData);
 
-        this.#createSVGFocus({
+        this.createSVGFocus({
             ...calculatedLengthAndData,
             contextWidth: width - this.FOCUS_WIDTH
         });
-        this.#createSVGContext(calculatedLengthAndData);
+        this.createSVGContext(calculatedLengthAndData);
     }
 
-    #createSVGFocus(data) {
+    createSVGFocus(data) {
         this.focus = new Focus(document.getElementById(this.FOCUS_SELECTOR));
         this.focus.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.focus.init(data);
     }
 
-    #createSVGContext(data) {
+    createSVGContext(data) {
 
         this.context = new Context(document.getElementById(this.CONTEXT_SELECTOR));
         this.context.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.context.init(data);
     }
 
-    #createTooltip() {
+    createTooltip() {
         this.context.tooltip = new Tooltip(`#${this.TOOLTIP_SELECTOR}`);
     }
 
@@ -154,12 +154,12 @@ export class D3Module {
         brushSystem.moveBrushToDefault();
     }
 
-    #linkScenes() {
+    linkScenes() {
         this.focus.externalEvent = this.context.changeContextArea;
         this.context.externalEvent = this.focus.changeFocusArea
     }
 
-    #addMainElement({data}) {
+    addMainElement({data}) {
 
         data.unshift({
             "id": "main-element",

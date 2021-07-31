@@ -18,20 +18,20 @@ export class Focus extends Scene {
 
     init({totalLength, minimalLength, maximalLength, data, contextWidth}) {
 
-        this.#configureLength({
+        this.configureLength({
             minimalLength, maximalLength, contextWidth, totalLength
         });
 
-        this.#initYAxis();
-        this.#initBrush();
-        this.#setDefaultSelection();
-        this.#createMarkerClusters(data);
-        this.#initRenderFunction();
+        this.initYAxis();
+        this.initBrush();
+        this.setDefaultSelection();
+        this.createMarkerClusters(data);
+        this.initRenderFunction();
 
         this.render();
     }
 
-    #initYAxis() {
+    initYAxis() {
 
         const endPosition = this.getTotalLength();
 
@@ -45,7 +45,7 @@ export class Focus extends Scene {
         this.yAxis.appendYline(this.width);
     }
 
-    #initBrush() {
+    initBrush() {
 
         this.brushSystem = new BrushSystem({
             svg: this.svg,
@@ -90,7 +90,7 @@ export class Focus extends Scene {
         });
     }
 
-    #setDefaultSelection() {
+    setDefaultSelection() {
 
         const totalLength = this.getTotalLength();
 
@@ -99,7 +99,7 @@ export class Focus extends Scene {
             : this.brushSystem.setDefaultSelection([-this.MAIN_ELEMENT_SIZE, this.maxBrushSelection - this.MAIN_ELEMENT_SIZE]);
     }
 
-    #createMarkerClusters(data) {
+    createMarkerClusters(data) {
 
         const totalLength = this.getTotalLength();
         const clusters = [];
@@ -136,7 +136,7 @@ export class Focus extends Scene {
 
     }
 
-    #initRenderFunction() {
+    initRenderFunction() {
 
         const renderSystem = new RenderSystem({
             y: this.yAxis.y,
@@ -213,11 +213,11 @@ export class Focus extends Scene {
         });
 
 
-        this.#configureLength({
+        this.configureLength({
             minimalLength: 0, maximalLength, contextWidth, totalLength: this.getTotalLength()
         });
 
-        this.#setDefaultSelection();
+        this.setDefaultSelection();
         this.updateBoundaries();
         this.brushSystem.setWheelBoundariesSelection({
             min: this.MAIN_ELEMENT_SIZE,
@@ -227,9 +227,9 @@ export class Focus extends Scene {
         this.render()
     }
 
-    #configureLength({minimalLength, maximalLength, contextWidth, totalLength}) {
+    configureLength({minimalLength, maximalLength, contextWidth, totalLength}) {
 
-        minimalLength = this.#getMinimalLength({minimalLength, contextWidth});
+        minimalLength = this.getMinimalLength({minimalLength, contextWidth});
 
         totalLength === 0 || totalLength < minimalLength
             ? this.setTotalLength(minimalLength + this.MAIN_ELEMENT_SIZE)
@@ -244,11 +244,11 @@ export class Focus extends Scene {
 
     }
 
-    #getMinimalLength({minimalLength, contextWidth}) {
+    getMinimalLength({minimalLength, contextWidth}) {
 
         if (minimalLength < this.MAIN_ELEMENT_SIZE) {
 
-            minimalLength = this.#calculateMinimalZoom({
+            minimalLength = this.calculateMinimalZoom({
                 contextWidth,
                 mainElementWidth: this.MAIN_ELEMENT_SIZE
             });
@@ -256,7 +256,7 @@ export class Focus extends Scene {
         return minimalLength;
     }
 
-    #calculateMinimalZoom({contextWidth, mainElementWidth}) {
+    calculateMinimalZoom({contextWidth, mainElementWidth}) {
         const minZoomRation = 1 / (contextWidth / mainElementWidth);
         console.log(minZoomRation * 50)
         return mainElementWidth * minZoomRation * 10;
@@ -264,13 +264,13 @@ export class Focus extends Scene {
 
     updateMarkersData({totalLength, minimalLength, maximalLength, data, contextWidth}) {
 
-        this.#configureLength({
+        this.configureLength({
             minimalLength, maximalLength, contextWidth, totalLength
         });
 
         this.yAxis.update(this.getTotalLength(), -this.MAIN_ELEMENT_SIZE);
-        this.#setDefaultSelection();
-        this.#createMarkerClusters(data);
+        this.setDefaultSelection();
+        this.createMarkerClusters(data);
         this.updateBoundaries();
 
         this.brushSystem.setWheelBoundariesSelection({
