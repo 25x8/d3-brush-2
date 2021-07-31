@@ -247,6 +247,13 @@ export class Context extends Scene {
                         const svgElement = d3.select(this);
 
                         context.#setSVGElementPosition({svgElement, elementData, index});
+
+                        elementData.status && appendWarningIcon({
+                            element: svgElement,
+                            status: elementData.status,
+                            height: context.yAxis.y(elementData.height + context.yAxis.getStartPosition()),
+                            position: elementData.position
+                        })
                     }
 
                 });

@@ -4,7 +4,7 @@ import {YAxis} from "../../systems/yAxis";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
-import {appendWarningIconToDrawingElement} from "../../utils/elementsTools";
+import {appendWarningIconToDrawingElement, calculateMaximumLength} from "../../utils/elementsTools";
 import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
@@ -173,8 +173,8 @@ export class Focus extends Scene {
                     elementData.status && appendWarningIconToDrawingElement({
                         element: svgGroup,
                         status: elementData.status,
-                        width: elementData.height,
-                        x: (focus.width / 4) + 5,
+                        width: focus.width / 4,
+                        x: (focus.width / 2) - (focus.width / 8)  ,
                         y: focus.yAxis.y(elementData.position)
                     });
 
@@ -198,6 +198,33 @@ export class Focus extends Scene {
         });
 
         this.render = () => renderSystem.renderElements(this.markersData);
+    }
+
+
+    resize(size, contextWidth) {
+        this.yAxis.resize(size);
+        this.brushSystem.resize(size);
+        this.resizeHtmlAndSvg(size);
+
+        const maximalLength = calculateMaximumLength({
+            minimalLength: this.minBrushSelection,
+            totalLength: this.getTotalLength(),
+            height: size.height
+        });
+
+
+        this.#configureLength({
+            minimalLength: 0, maximalLength, contextWidth, totalLength: this.getTotalLength()
+        });
+
+        this.#setDefaultSelection();
+        this.updateBoundaries();
+        this.brushSystem.setWheelBoundariesSelection({
+            min: this.MAIN_ELEMENT_SIZE,
+            max: this.totalLength
+        });
+
+        this.render()
     }
 
     #configureLength({minimalLength, maximalLength, contextWidth, totalLength}) {
@@ -230,7 +257,8 @@ export class Focus extends Scene {
     }
 
     #calculateMinimalZoom({contextWidth, mainElementWidth}) {
-        const minZoomRation = 1 - mainElementWidth / contextWidth;
+        const minZoomRation = 1 / (contextWidth / mainElementWidth);
+        console.log(minZoomRation * 50)
         return mainElementWidth * minZoomRation * 10;
     }
 

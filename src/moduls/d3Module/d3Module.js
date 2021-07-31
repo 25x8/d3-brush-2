@@ -37,7 +37,7 @@ export class D3Module {
             height,
             width: this.FOCUS_WIDTH,
             delta: 10
-        });
+        }, width - this.FOCUS_WIDTH);
 
         this.context.resize({
             height,
@@ -54,11 +54,12 @@ export class D3Module {
 
         this.#addMainElement(updatedLengthAndData);
 
+        this.context.updateData(updatedLengthAndData)
+
         this.focus.updateMarkersData({
             ...updatedLengthAndData,
             contextWidth: this.context.width
         });
-        this.context.updateData(updatedLengthAndData)
     }
 
     updateColor({index, color}) {

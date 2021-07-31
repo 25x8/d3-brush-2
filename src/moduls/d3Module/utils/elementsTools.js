@@ -59,7 +59,8 @@ export function calculateMaximumLength({minimalLength, totalLength, height}) {
 }
 
 export function appendWarningIcon({element, status}){
-    element.select('image').remove();
+    const icon = element.select('image');
+    icon.node() && icon.remove();
 
     element.append('image')
         .attr('href', status === "danger" ? dangerSign : warningSign )
@@ -69,12 +70,12 @@ export function appendWarningIcon({element, status}){
 }
 
 export function appendWarningIconToDrawingElement({element, status, width, y, x}) {
-    element.select('image').remove();
-
+    const icon = element.select('image');
+    icon.node() && icon.remove();
 
     element.append('image')
         .attr('href', status === "danger" ? dangerSign : warningSign )
-        .attr('height', width)
+        .attr('width', width)
         .attr('x', x)
         .attr('y', y);
 }
