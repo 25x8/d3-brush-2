@@ -33,16 +33,16 @@ export class Context extends Scene {
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
 
-        this.appendElementsImages();
-        this.initYAxis();
-        this.initBrush();
-        this.initMouseEvents();
-        this.initRenderFunction();
+        this._appendElementsImages();
+        this._initYAxis();
+        this._initBrush();
+        this._initMouseEvents();
+        this._initRenderFunction();
 
         this.render();
     }
 
-    appendElementsImages() {
+    _appendElementsImages() {
 
         const defs = this.svg.append('defs');
 
@@ -53,7 +53,7 @@ export class Context extends Scene {
         });
     }
 
-    initYAxis() {
+    _initYAxis() {
 
         const endPosition = this.getTotalLength();
 
@@ -63,7 +63,7 @@ export class Context extends Scene {
         });
     }
 
-    initBrush() {
+    _initBrush() {
 
         this.brushSystem = new BrushSystem({
             svg: this.svg,
@@ -91,7 +91,7 @@ export class Context extends Scene {
         });
     }
 
-    initMouseEvents() {
+    _initMouseEvents() {
 
         this.hoverline = document.querySelector('#hover-line');
 
@@ -103,7 +103,7 @@ export class Context extends Scene {
             })
             .on('mousemove', (e) => {
 
-                this.renderTooltipAndHoverine(e);
+                this._renderTooltipAndHoverine(e);
             })
             .on('mouseout', () => {
 
@@ -117,7 +117,7 @@ export class Context extends Scene {
 
                 const {deltaY} = e;
                 const renderWhileWheeling = setInterval(() => {
-                    this.renderTooltipAndHoverine(e);
+                    this._renderTooltipAndHoverine(e);
                 }, 25);
 
                 setTimeout(() => {
@@ -136,7 +136,7 @@ export class Context extends Scene {
             })
     }
 
-    renderTooltipAndHoverine(e) {
+    _renderTooltipAndHoverine(e) {
 
         let {x, y} = this.svg.node().getBoundingClientRect()
         let {clientX: currentX, clientY: currentY} = e;
@@ -165,7 +165,7 @@ export class Context extends Scene {
     }
 
 
-    initRenderFunction() {
+    _initRenderFunction() {
 
         const renderSystem = new RenderSystem({
             y: this.yAxis.y,
@@ -189,7 +189,7 @@ export class Context extends Scene {
                             .attr('xlink:href', mainElementSvg)
                             .attr('class', renderSystem.selector);
 
-                        context.setSVGElementPosition({svgElement, elementData, index});
+                        context._setSVGElementPosition({svgElement, elementData, index});
 
                     } else if (elementData.type === TYPE_K) {
 
@@ -198,7 +198,7 @@ export class Context extends Scene {
 
                         const drawElement = svgGroup.append('path');
 
-                        context.setDrawElementPosition({elementData, drawElement, svgGroup, index});
+                        context._setDrawElementPosition({elementData, drawElement, svgGroup, index});
 
                     } else {
 
@@ -216,7 +216,7 @@ export class Context extends Scene {
 
                         svgElement.append('use').attr('href', d => `#${d.type}`)
 
-                        context.setSVGElementPosition({svgElement, elementData, index});
+                        context._setSVGElementPosition({svgElement, elementData, index});
 
                         elementData.status && appendWarningIcon({
                             element: svgElement,
@@ -240,13 +240,13 @@ export class Context extends Scene {
                         const svgGroup = d3.select(this);
                         const drawElement = svgGroup.select('path');
 
-                        context.setDrawElementPosition({elementData, drawElement, svgGroup, index})
+                        context._setDrawElementPosition({elementData, drawElement, svgGroup, index})
 
                     } else {
 
                         const svgElement = d3.select(this);
 
-                        context.setSVGElementPosition({svgElement, elementData, index});
+                        context._setSVGElementPosition({svgElement, elementData, index});
 
                         elementData.status && appendWarningIcon({
                             element: svgElement,
@@ -264,7 +264,7 @@ export class Context extends Scene {
         this.render = () => renderSystem.renderElements(this.visibleElements);
     }
 
-    setSVGElementPosition({svgElement, elementData, index}) {
+    _setSVGElementPosition({svgElement, elementData, index}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
@@ -277,7 +277,7 @@ export class Context extends Scene {
             .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : elementData.color);
     }
 
-    setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
+    _setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
@@ -305,11 +305,11 @@ export class Context extends Scene {
     changeContextArea = (boundaries) => {
 
         this.yAxis.updateY(boundaries[1], boundaries[0]);
-        this.getElementFromRange(boundaries);
+        this._getElementFromRange(boundaries);
         this.render();
     }
 
-    getElementFromRange(boundaries) {
+    _getElementFromRange(boundaries) {
 
         let leftPos = this.bisect.center(this.elementsData, boundaries[0]);
         const rightPos = this.bisect.right(this.elementsData, boundaries[1]);
