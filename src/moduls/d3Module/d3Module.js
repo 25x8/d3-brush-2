@@ -20,12 +20,13 @@ export class D3Module {
     context;
     focus;
 
-    initScene({selector, width, height, data}) {
+    initScene({selector, width, height, data, onClick}) {
         this._createHTMLScenes({selector, width, height});
         this._createSVGScenes(data, width);
         this._createTooltip();
         this._linkScenes();
         this.moveBrushToDefault();
+        this._addClickEventOnContext(onClick)
     }
 
     resizeScene({width, height}) {
@@ -37,7 +38,7 @@ export class D3Module {
             height,
             width: this.FOCUS_WIDTH,
             delta: 10
-        }, width - this.FOCUS_WIDTH);
+        });
 
         this.context.resize({
             height,
@@ -56,10 +57,12 @@ export class D3Module {
 
         this.context.updateData(updatedLengthAndData)
 
+
         this.focus.updateMarkersData({
             ...updatedLengthAndData,
             contextWidth: this.context.width
         });
+
     }
 
     updateColor({index, color}) {
@@ -171,6 +174,10 @@ export class D3Module {
         });
 
         return data
+    }
+
+    _addClickEventOnContext(event) {
+        this.context.handleClick = event;
     }
 
 }

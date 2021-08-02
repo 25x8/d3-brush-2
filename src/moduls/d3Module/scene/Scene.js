@@ -63,8 +63,8 @@ export class Scene {
     }
 
     setMinMaxSelection({min, max}) {
-        max && (this.maxBrushSelection = Math.round(max));
-        min && (this.minBrushSelection = Math.round(min));
+        max && (this.maxBrushSelection = max);
+        min && (this.minBrushSelection = min);
     }
 
     setTotalLength(value) {

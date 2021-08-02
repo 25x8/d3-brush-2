@@ -16,6 +16,9 @@ export class Context extends Scene {
     elementsData;
     visibleElements;
     selectedElement;
+
+    handleClick;
+
     hoverline;
     bisect = d3.bisector(d => d.position);
 
@@ -274,7 +277,8 @@ export class Context extends Scene {
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 2) - (interpolatedHeight / 2))
             .attr('y', this.yAxis.y(elementData.position))
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : elementData.color);
+            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : elementData.color)
+
     }
 
     _setDrawElementPosition({drawElement, elementData, svgGroup, index}) {

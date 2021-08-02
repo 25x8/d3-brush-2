@@ -6,6 +6,7 @@ import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
 import {appendWarningIconToDrawingElement, calculateMaximumLength} from "../../utils/elementsTools";
 import * as d3 from '../../utils/d3Lib';
+import {min} from "d3-array";
 
 export class Focus extends Scene {
 
@@ -54,7 +55,6 @@ export class Focus extends Scene {
             onBrush: ({selection}) => {
 
 
-
                 const {
                     convertedSelection,
                     selectionDifference
@@ -94,12 +94,12 @@ export class Focus extends Scene {
 
         const totalLength = this.getTotalLength();
 
-        console.log(totalLength)
-        console.log(this.maxBrushSelection)
+        this.maxBrushSelection === 0 && (this.maxBrushSelection = totalLength + this.MAIN_ELEMENT_SIZE)
 
         totalLength < this.maxBrushSelection
             ? this.brushSystem.setDefaultSelection([-this.MAIN_ELEMENT_SIZE, totalLength])
             : this.brushSystem.setDefaultSelection([-this.MAIN_ELEMENT_SIZE, this.maxBrushSelection - this.MAIN_ELEMENT_SIZE]);
+
     }
 
     _createMarkerClusters(data) {
@@ -177,7 +177,7 @@ export class Focus extends Scene {
                         element: svgGroup,
                         status: elementData.status,
                         width: focus.width / 4,
-                        x: (focus.width / 2) - (focus.width / 8)  ,
+                        x: (focus.width / 2) - (focus.width / 8),
                         y: focus.yAxis.y(elementData.position)
                     });
 
@@ -204,7 +204,7 @@ export class Focus extends Scene {
     }
 
 
-    resize(size, contextWidth) {
+    resize(size) {
         this.yAxis.resize(size);
         this.brushSystem.resize(size);
         this.resizeHtmlAndSvg(size);
@@ -215,11 +215,9 @@ export class Focus extends Scene {
             height: size.height
         });
 
-
         this._configureLength({
-            minimalLength: 0, maximalLength, contextWidth, totalLength: this.getTotalLength()
+            minimalLength: this.minBrushSelection, maximalLength, totalLength: this.getTotalLength()
         });
-
 
         this._setDefaultSelection();
         this.updateBoundaries();
@@ -232,45 +230,29 @@ export class Focus extends Scene {
         this.render()
     }
 
-    _configureLength({minimalLength, maximalLength, contextWidth, totalLength}) {
-
-        minimalLength = this._getMinimalLength({minimalLength, contextWidth});
+    _configureLength({minimalLength, maximalLength, totalLength}) {
 
         totalLength === 0 || totalLength < minimalLength
             ? this.setTotalLength(minimalLength + this.MAIN_ELEMENT_SIZE)
             : this.setTotalLength(totalLength)
 
 
-        if(!maximalLength || maximalLength < minimalLength) {
+        if (!maximalLength || maximalLength < minimalLength) {
             maximalLength = minimalLength
         }
 
         this.setMinMaxSelection({min: minimalLength, max: maximalLength});
-
-    }
-
-    _getMinimalLength({minimalLength, contextWidth}) {
-
-        if (minimalLength < this.MAIN_ELEMENT_SIZE) {
-
-            minimalLength = this._calculateMinimalZoom({
-                contextWidth,
-                mainElementWidth: this.MAIN_ELEMENT_SIZE
-            });
-        }
-        return minimalLength;
     }
 
     _calculateMinimalZoom({contextWidth, mainElementWidth}) {
-        const minZoomRation = 1 / (contextWidth / mainElementWidth);
-        console.log(minZoomRation * 50)
-        return mainElementWidth * minZoomRation * 10;
+        const minZoomRation = 10 / (contextWidth / mainElementWidth);
+        return mainElementWidth * minZoomRation;
     }
 
-    updateMarkersData({totalLength, minimalLength, maximalLength, data, contextWidth}) {
+    updateMarkersData({totalLength, minimalLength, maximalLength, data}) {
 
         this._configureLength({
-            minimalLength, maximalLength, contextWidth, totalLength
+            minimalLength, maximalLength, totalLength
         });
 
         this.yAxis.update(this.getTotalLength(), -this.MAIN_ELEMENT_SIZE);

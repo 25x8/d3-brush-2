@@ -1,5 +1,6 @@
 import warningSign from '../../../img/icons/warning.svg';
 import dangerSign from '../../../img/icons/alarm.svg';
+import log from "d3-scale/src/log";
 
 const MIN_PX = 10;
 const START_MIN = Number.MAX_SAFE_INTEGER;
@@ -20,6 +21,7 @@ export function calculateElementsPosition({data, height}) {
 
     const dataWithCalculatedPosition = data.map(el => {
 
+
         el.position = totalLength;
         el.height < minimalLength && (minimalLength = el.height)
 
@@ -28,8 +30,9 @@ export function calculateElementsPosition({data, height}) {
         return Object.assign({}, el);
     });
 
-    minimalLength === START_MIN && (minimalLength = 0);
 
+
+    minimalLength === START_MIN && (minimalLength = 0);
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 
     return {
@@ -47,8 +50,14 @@ export function appendAllElementsToContainer({elements, container}) {
 }
 
 export function calculateMaximumLength({minimalLength, totalLength, height}) {
+    console.log(minimalLength)
+    if(minimalLength === 0 ) {
+        return  0
+    }
 
     minimalLength < 1 && (minimalLength = Math.floor(1 / minimalLength));
+
+    totalLength === 0 && (totalLength = 1);
 
     const pxInMeter = totalLength / height;
     const metersInMinPxs = pxInMeter * MIN_PX;
