@@ -229,11 +229,7 @@ export class Context extends Scene {
 
                     } else {
 
-                        const svgElement = d3.select(this).append('svg').on("click", function (e) {
-                            console.log(12312)
-                            e.stopPropagation();
-                        });
-                        ;
+                        const svgElement = d3.select(this).append('svg');
 
                         svgElement
                             .attr('class', renderSystem.selector)

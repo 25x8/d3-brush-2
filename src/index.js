@@ -67,7 +67,7 @@ class Scheme2D extends Singleton {
             width: size.width,
             height: size.height,
             data: d3_data,
-            onClick: (index) => console.log(index)
+            onClick: (item) => console.log(item)
         });
 
         window.select = (id) => {
