@@ -67,7 +67,7 @@ class Scheme2D extends Singleton {
             width: size.width,
             height: size.height,
             data: d3_data,
-            onClick: () => console.log('1211')
+            onClick: (index) => console.log(index)
         });
 
         window.select = (id) => {
@@ -178,7 +178,7 @@ class Scheme2D extends Singleton {
         // поменялась схема
         if (update) {
             // todo обновить схему
-            const d3_data = newData.map(({status, length, diameter, type, }, index) => ({status, height: length, width: diameter, type, color: getColor(index)}))
+            const d3_data = newData.map(({status, length, diameter, type, id}, index) => ({status, height: length, width: diameter, type, id, color: getColor(index)}))
             this.d3module.updateData(d3_data)
             if (Scheme2D.instance.select.id) Scheme2D.instance.selectItem();
         } else {

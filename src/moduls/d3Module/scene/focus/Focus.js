@@ -116,16 +116,22 @@ export class Focus extends Scene {
 
                 const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
 
+                const itemsColor = [];
+
                 let warningSignal = null;
 
                 for (let j = Math.round(partStep * (i - 1)) + 1; j < Math.round(partStep * i); j++) {
                     const status = data[j].status;
+                    itemsColor.push(getColor(j));
                     if (status) {
                         warningSignal !== 'danger' && (warningSignal = status);
                     }
                 }
 
+                const interpolatedColor = d3.interpolateRgb(...itemsColor)(0.5);
+
                 warningSignal && (nextItem.status = warningSignal);
+                nextItem.color = interpolatedColor;
                 nextItem.height = partLength;
                 nextItem.position = partLength * (i - 1);
 

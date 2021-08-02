@@ -137,10 +137,38 @@ export class Context extends Scene {
                     this.externalEvent(deltaY)
                 }
             })
+            .on("click", (e) => {
+                const elementCoords = this._getCordsAndIndex(e);
+                !elementCoords
+                    ? this.handleClick(null)
+                    : this.handleClick(this.elementsData[elementCoords.index]);
+
+            });
     }
 
     _renderTooltipAndHoverine(e) {
 
+        const elementCoords = this._getCordsAndIndex(e);
+
+        if (!elementCoords) {
+            return undefined
+        }
+
+        const {currentX, currentY, index} = elementCoords;
+
+        this.hoverline.style.transform = `translateY(${currentY}px)`;
+
+        this.tooltip.setContent({
+            content: Scheme2D.getTooltip(index - 1),
+            element: this.elementsData[index]
+        });
+
+        this.tooltip.setPosition(currentX, currentY);
+
+        this.render()
+    }
+
+    _getCordsAndIndex(e) {
         let {x, y} = this.svg.node().getBoundingClientRect()
         let {clientX: currentX, clientY: currentY} = e;
 
@@ -155,16 +183,11 @@ export class Context extends Scene {
 
         const index = this.bisect.left(this.elementsData, hoveringMeter) - 1;
 
-        this.hoverline.style.transform = `translateY(${currentY}px)`;
-
-        this.tooltip.setContent({
-            content: Scheme2D.getTooltip(index - 1),
-            element: this.elementsData[index]
-        });
-
-        this.tooltip.setPosition(currentX, currentY);
-
-        this.render()
+        return {
+            currentX,
+            currentY,
+            index
+        }
     }
 
 
@@ -190,7 +213,8 @@ export class Context extends Scene {
 
                         svgElement
                             .attr('xlink:href', mainElementSvg)
-                            .attr('class', renderSystem.selector);
+                            .attr('class', renderSystem.selector)
+
 
                         context._setSVGElementPosition({svgElement, elementData, index});
 
@@ -205,7 +229,11 @@ export class Context extends Scene {
 
                     } else {
 
-                        const svgElement = d3.select(this).append('svg');
+                        const svgElement = d3.select(this).append('svg').on("click", function (e) {
+                            console.log(12312)
+                            e.stopPropagation();
+                        });
+                        ;
 
                         svgElement
                             .attr('class', renderSystem.selector)
