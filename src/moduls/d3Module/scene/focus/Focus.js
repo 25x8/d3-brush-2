@@ -10,6 +10,7 @@ import * as d3 from '../../utils/d3Lib';
 export class Focus extends Scene {
 
     PARTS_NUMBER = 20;
+    MIN_PX_IN_ELEMENT = 10;
     markersData;
 
     constructor(container) {
@@ -105,13 +106,14 @@ export class Focus extends Scene {
 
         const totalLength = this.getTotalLength();
         const clusters = [];
+        const partsNumber = this._calculateElementsNumber(totalLength);
 
-        if (data.length > this.PARTS_NUMBER) {
+        if (data.length > partsNumber) {
 
-            const partStep = data.length / this.PARTS_NUMBER;
-            const partLength = totalLength / this.PARTS_NUMBER;
+            const partStep = data.length / partsNumber;
+            const partLength = totalLength / partsNumber;
 
-            for (let i = 1; i <= this.PARTS_NUMBER; i++) {
+            for (let i = 1; i <= partsNumber; i++) {
 
                 const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
 
@@ -251,6 +253,12 @@ export class Focus extends Scene {
         }
 
         this.setMinMaxSelection({min: minimalLength, max: maximalLength});
+    }
+
+    _calculateElementsNumber(length) {
+        const numberElementsInPx = this.height / length;
+        const elementLength = this.MIN_PX_IN_ELEMENT / numberElementsInPx;
+        return length / elementLength;
     }
 
     _calculateMinimalZoom({contextWidth, mainElementWidth}) {

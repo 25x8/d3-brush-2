@@ -12,6 +12,8 @@ const MAIN_COLOR = "#0f2f49";
 // todo использовать для заливки выбранного элемента
 const SELECT_COLOR = "#13a81b";
 const SCENE = '#main-scene';
+const DANGER_COLOR = "#de1818";
+const WARNING_COLOR = "#d7e01f";
 
 
 class Scheme2D extends Singleton {
@@ -51,13 +53,15 @@ class Scheme2D extends Singleton {
 
             const newDatum = {
                 status,
-                type,
+                height: length,
+                width: 2,
+                type: type === "notknow" ? TYPE_K : type,
                 id,
                 color: getColor(index)
             }
-
-            length && (newDatum.height = length);
-            diameter && (newDatum.width = diameter);
+            //
+            // length && (newDatum.height = length);
+            // diameter && (newDatum.width = diameter);
 
             return newDatum
         })
@@ -123,7 +127,7 @@ class Scheme2D extends Singleton {
         const oldIndex = this.select.index;
         // id ранее выбраного элемента
         const oldId = this.select.id;
-        // индекс выброного
+        // индекс выбранного
         const newIndex = this.data.findIndex(({id}) => id === newId);
 
         if (oldIndex === newIndex) {
@@ -140,7 +144,6 @@ class Scheme2D extends Singleton {
     }
 
     resize = (size) => {
-        console.log(size)
         this.d3module.resizeScene(size)
     }
 
@@ -179,7 +182,15 @@ class Scheme2D extends Singleton {
         // поменялась схема
         if (update) {
             // todo обновить схему
-            const d3_data = newData.map(({status, length, diameter, type, id}, index) => ({status, height: length, width: diameter, type, id, color: getColor(index)}))
+            const d3_data = newData.map(({status, length, diameter, type, id}, index) =>
+                ({
+                    status,
+                    height: length,
+                    width: 2,
+                    type: type === "notknow" ? TYPE_K : type,
+                    id,
+                    color: getColor(index)
+                }))
             this.d3module.updateData(d3_data)
             if (Scheme2D.instance.select.id) Scheme2D.instance.selectItem();
         } else {
@@ -274,3 +285,4 @@ export {Scheme2D};
 // элементы фокуса прибить к правой стенке +++
 // изменение цвета +++
 // добавить index элемента в клике +++
+// расчет количества элементов

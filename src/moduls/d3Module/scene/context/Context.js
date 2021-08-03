@@ -324,8 +324,8 @@ export class Context extends Scene {
         elementData.status && appendWarningIconToDrawingElement({
             element: svgGroup,
             status: elementData.status,
-            width: interpolatedWidth / 2,
-            x: (this.width / 2) - (elementData.width / 1.5),
+            width: interpolatedWidth,
+            x: (this.width / 2) - (interpolatedWidth / 2),
             y: this.yAxis.y(elementData.position) + elementData.height
         })
     }
