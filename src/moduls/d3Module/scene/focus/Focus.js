@@ -187,7 +187,7 @@ export class Focus extends Scene {
                         element: svgGroup,
                         status: elementData.status,
                         width: focus.width / 4,
-                        x: (focus.width / 2) - (focus.width / 8),
+                        x: (42) - (focus.width / 8),
                         y: focus.yAxis.y(elementData.position)
                     });
 
