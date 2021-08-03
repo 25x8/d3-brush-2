@@ -52,8 +52,7 @@ export class Focus extends Scene {
             svg: this.svg,
             delta: 10,
             yConverter: this.yAxis.y,
-            onBrush: ({selection}) => {
-
+            onBrush: ({selection,sourceEvent}) => {
 
                 const {
                     convertedSelection,
@@ -65,15 +64,18 @@ export class Focus extends Scene {
 
                     this.externalEvent && this.externalEvent(convertedSelection);
                     this.brushSystem.setCurrentSelection(convertedSelection);
+
+                } else if(!sourceEvent) {
+                    this.externalEvent && this.externalEvent(convertedSelection);
+                    this.brushSystem.setCurrentSelection(convertedSelection);
                 }
 
             },
-            onBrushEnd: ({selection}) => {
+            onBrushEnd: ({selection, sourceEvent}) => {
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
-
-                } else {
-
+                } else if(sourceEvent) {
+                    console.log(sourceEvent)
                     const {selectionDifference} = this.brushSystem.getSelectionDifference(selection);
 
                     if (!this.checkSelectionValid(selectionDifference)) {
@@ -302,8 +304,6 @@ export class Focus extends Scene {
     }
 
     checkSelectionValid(selectionDifference) {
-
-        selectionDifference = Math.round(selectionDifference);
 
         if (selectionDifference < this.minBrushSelection) {
             return false

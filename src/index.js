@@ -263,7 +263,7 @@ class Scheme2D extends Singleton {
      */
     static init = (o) => new Scheme2D(o);
     static changeMode = (mode) => Scheme2D.instance.changeMode(mode);
-    static selectItem = (id) => Scheme2D.instance.selectItem(id);
+    static selectItem = (index) => Scheme2D.instance.selectItem(index);
     static getMode = () => Scheme2D.instance.mode;
     static updateData = (data) => Scheme2D.instance.updateData(data);
     static resize = (size) => Scheme2D.instance.resize(size);

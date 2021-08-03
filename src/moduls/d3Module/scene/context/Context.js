@@ -374,17 +374,18 @@ export class Context extends Scene {
         this.render();
     }
 
-    selectElement(id) {
+    selectElement(index) {
 
         try {
 
-            this.selectedElement && (this.selectedElement.select = false);
-            this.selectedElement = this.elementsData.find(el => el.id === id);
+            this.selectedElement && this.deselectElement();
+            this.selectedElement = this.elementsData[index + 1];
+            // this.selectedElement = this.elementsData.find(el => el.id === id);
             this.selectedElement.select = true;
 
-            const {position} = this.selectedElement;
+            const {position, height} = this.selectedElement;
 
-            this.externalEvent([position, position + this.minBrushSelection]);
+            this.externalEvent([position - (height / 2), position + (height * 1.5)]);
 
         } catch (e) {
             alert('Выбранный элемент не найден')
