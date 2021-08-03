@@ -6,7 +6,6 @@ import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
 import {appendWarningIconToDrawingElement, calculateMaximumLength} from "../../utils/elementsTools";
 import * as d3 from '../../utils/d3Lib';
-import {min} from "d3-array";
 
 export class Focus extends Scene {
 
@@ -43,7 +42,7 @@ export class Focus extends Scene {
             delta: 10
         });
 
-        this.yAxis.appendYline(this.width);
+        this.yAxis.appendYline(35);
     }
 
     _initBrush() {
@@ -122,7 +121,9 @@ export class Focus extends Scene {
 
                 for (let j = Math.round(partStep * (i - 1)) + 1; j < Math.round(partStep * i); j++) {
                     const status = data[j].status;
-                    itemsColor.push(getColor(j));
+
+                    itemsColor.push(data[j].color);
+
                     if (status) {
                         warningSignal !== 'danger' && (warningSignal = status);
                     }
@@ -168,7 +169,8 @@ export class Focus extends Scene {
 
                     drawElement.attr('d', d => {
                         return FocusMarker.createLinePath({
-                            x: 25,
+                            x: 42,
+                            width: 10,
                             y: d.position,
                             length: d.height,
                             yConverter: renderSystem.y
@@ -194,7 +196,8 @@ export class Focus extends Scene {
                 update.select('path')
                     .attr('d', d => {
                         return FocusMarker.createLinePath({
-                            x: 25,
+                            x: 42,
+                            width: 10,
                             y: d.position,
                             length: d.height,
                             yConverter: renderSystem.y
@@ -281,9 +284,9 @@ export class Focus extends Scene {
 
     }
 
-    updateColor({index, color}) {
-        const element = this.markersData[index];
-        element.color = color;
+    updateColor(data) {
+        this._createMarkerClusters(data)
+        this.render();
     }
 
     changeFocusArea = (boundaries) => {

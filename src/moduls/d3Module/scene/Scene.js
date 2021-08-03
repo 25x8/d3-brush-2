@@ -14,6 +14,8 @@ export class Scene {
     totalLength = 0;
     externalEvent;
     render;
+    MIN_ZOOM = 20;
+
 
     constructor(container) {
         const {width, height} = container.getBoundingClientRect();
@@ -63,6 +65,7 @@ export class Scene {
     }
 
     setMinMaxSelection({min, max}) {
+        min < this.MIN_ZOOM && (min = this.MIN_ZOOM)
         max && (this.maxBrushSelection = max);
         min && (this.minBrushSelection = min);
     }

@@ -28,8 +28,6 @@ export class Context extends Scene {
 
     init({totalLength, minimalLength, data}) {
 
-        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE);
-
         this.elementsData = data;
         this.visibleElements = data;
 
@@ -130,7 +128,7 @@ export class Context extends Scene {
                 const newTopBorder = this.yAxis.y.invert(e.clientY) + deltaY;
 
                 if (newTopBorder > this.totalLength) {
-                    this.externalEvent(this.totalLength - this.yAxis.y.invert(e.clientY))
+                    this.externalEvent(this.totalLength)
                 } else if (newTopBorder < -50) {
                     return false;
                 } else {
@@ -141,7 +139,7 @@ export class Context extends Scene {
                 const elementCoords = this._getCordsAndIndex(e);
                 !elementCoords
                     ? this.handleClick(null)
-                    : this.handleClick(this.elementsData[elementCoords.index]);
+                    : this.handleClick({...this.elementsData[elementCoords.index], index: elementCoords.index - 1});
 
             });
     }
@@ -154,7 +152,9 @@ export class Context extends Scene {
             return undefined
         }
 
-        const {currentX, currentY, index} = elementCoords;
+        const {currentY, index} = elementCoords;
+
+        const {clientX, clientY} = e;
 
         this.hoverline.style.transform = `translateY(${currentY}px)`;
 
@@ -163,7 +163,7 @@ export class Context extends Scene {
             element: this.elementsData[index]
         });
 
-        this.tooltip.setPosition(currentX, currentY);
+        this.tooltip.setPosition(clientX, clientY);
 
         this.render()
     }
@@ -355,8 +355,6 @@ export class Context extends Scene {
 
     updateData({data, minimalLength, totalLength}) {
 
-        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE);
-
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
 
@@ -371,8 +369,9 @@ export class Context extends Scene {
     }
 
     updateColor({index, color}) {
-        const element = this.elementsData[index];
+        const element = this.elementsData[index + 1];
         element.color = color;
+        this.render();
     }
 
     selectElement(id) {

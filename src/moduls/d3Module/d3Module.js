@@ -65,9 +65,12 @@ export class D3Module {
 
     }
 
-    updateColor({index, color}) {
-        this.focus.updateColor({index, color});
+    updateContextColor({index, color}) {
         this.context.updateColor({index, color});
+    }
+
+    updateFocusColor() {
+        this.focus.updateColor(this.context.elementsData);
     }
 
     selectElement(id) {

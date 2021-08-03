@@ -9,11 +9,12 @@
 
 #d3-module-container {
     display: flex;
-
 }
 
 #tooltip-context {
-    position: absolute;
+    position: fixed;
+    left: 0;
+    top: 0;
 }
 
 #hover-line {

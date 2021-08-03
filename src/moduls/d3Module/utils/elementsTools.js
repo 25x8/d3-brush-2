@@ -1,6 +1,5 @@
 import warningSign from '../../../img/icons/warning.svg';
 import dangerSign from '../../../img/icons/alarm.svg';
-import log from "d3-scale/src/log";
 
 const MIN_PX = 10;
 const START_MIN = Number.MAX_SAFE_INTEGER;

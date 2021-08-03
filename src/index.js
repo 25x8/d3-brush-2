@@ -108,9 +108,10 @@ class Scheme2D extends Singleton {
             // обновить цвет элемента
             const color = mode === "work" ? getColor(val) : getColorFromMax(val);
             if (type !== TYPE_K) {
-                this.d3module.updateColor({index, color})
+                this.d3module.updateContextColor({index, color})
             }
         })
+        this.d3module.updateFocusColor();
     }
 
     /**
@@ -189,14 +190,16 @@ class Scheme2D extends Singleton {
                 const color = Scheme2D.getColor(index);
                 // обновить цвет элемента (за исключением выделеных элементов)
                 if (currentVal !== newVal && selectIndex !== index) {
-                    this.d3module.updateColor({index, color});
+                    this.d3module.updateContextColor({index, color});
                     updateColorMap = true;
                 }
                 if (currentStatus !== newStatus) {
-                    this.d3module.updateColor({index, color});
+                    this.d3module.updateContextColor({index, color});
                     updateStatusMap = true;
                 }
             })
+
+            this.d3module.updateFocusColor();
         }
     }
 
@@ -261,3 +264,13 @@ window.Scheme2D = Scheme2D;
 
 export {SELECT_COLOR, TYPE_K, TYPE_K_COLOR}
 export {Scheme2D};
+
+//todo
+// element fixed  +++
+// добавить код Андрея  +++
+// context zoom +++
+// минимальный зум 20 и в фокусе и в контексте +++
+// баг отскок от нижнего края при скролле +++
+// элементы фокуса прибить к правой стенке +++
+// изменение цвета +++
+// добавить index элемента в клике +++
