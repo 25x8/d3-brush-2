@@ -112,7 +112,9 @@ export class D3Module {
 
         const htmlHoverLine = createHTMLElement({name: 'hover-line'});
 
-        htmlContext.prepend(htmlHoverLine, htmlTooltip);
+        document.querySelector('body').prepend(htmlTooltip)
+
+        htmlContext.prepend(htmlHoverLine);
 
         appendAllElementsToContainer({
             container: this.moduleContainer,

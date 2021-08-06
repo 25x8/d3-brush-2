@@ -319,7 +319,8 @@ export class Context extends Scene {
             height: interpolatedHeight
         }))
             .attr('stroke', 'black')
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index));
+            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index))
+            .style('stroke-width', '0.02rem')
 
         elementData.status && appendWarningIconToDrawingElement({
             element: svgGroup,

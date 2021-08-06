@@ -87,3 +87,11 @@ export function appendWarningIconToDrawingElement({element, status, width, y, x}
         .attr('x', x)
         .attr('y', y);
 }
+
+export function appendWarningIconToFocus({element, status, width, y, x}) {
+    element.append('image')
+        .attr('href', status === "danger" ? dangerSign : warningSign )
+        .attr('width', width)
+        .attr('x', x)
+        .attr('y', y);
+}

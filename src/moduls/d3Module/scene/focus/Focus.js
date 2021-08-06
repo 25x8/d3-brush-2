@@ -4,13 +4,18 @@ import {YAxis} from "../../systems/yAxis";
 import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
-import {appendWarningIconToDrawingElement, calculateMaximumLength} from "../../utils/elementsTools";
+import {
+    appendWarningIconToDrawingElement,
+    appendWarningIconToFocus,
+    calculateMaximumLength
+} from "../../utils/elementsTools";
 import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
 
     PARTS_NUMBER = 20;
-    MIN_PX_IN_ELEMENT = 10;
+    MIN_PX_IN_ELEMENT = 2;
+    MIN_PX_FOR_WARN_SIGN = 10;
     markersData;
 
     constructor(container) {
@@ -40,7 +45,7 @@ export class Focus extends Scene {
             svg: this.svg,
             endPosition,
             startPosition: -this.MAIN_ELEMENT_SIZE,
-            delta: 10
+            delta: 0
         });
 
         this.yAxis.appendYline(35);
@@ -50,7 +55,7 @@ export class Focus extends Scene {
 
         this.brushSystem = new BrushSystem({
             svg: this.svg,
-            delta: 10,
+            delta: 0,
             yConverter: this.yAxis.y,
             onBrush: ({selection,sourceEvent}) => {
 
@@ -109,6 +114,8 @@ export class Focus extends Scene {
         const totalLength = this.getTotalLength();
         const clusters = [];
         const partsNumber = this._calculateElementsNumber(totalLength);
+        const warnNumber = this._calculateWarnNumber(totalLength);
+        const warnStep = partsNumber / warnNumber;
 
         if (data.length > partsNumber) {
 
@@ -185,8 +192,8 @@ export class Focus extends Scene {
                             return d.color || getColor(index)
                         });
 
-                    elementData.status && appendWarningIconToDrawingElement({
-                        element: svgGroup,
+                    elementData.status && appendWarningIconToFocus({
+                        element: d3.select('.d3-module-brush'),
                         status: elementData.status,
                         width: focus.width / 4,
                         x: (42) - (focus.width / 8),
@@ -261,6 +268,12 @@ export class Focus extends Scene {
         const numberElementsInPx = this.height / length;
         const elementLength = this.MIN_PX_IN_ELEMENT / numberElementsInPx;
         return length / elementLength;
+    }
+
+    _calculateWarnNumber(length) {
+        const numberElementsInPx = this.height / length;
+        const warnLength = this.MIN_PX_FOR_WARN_SIGN / numberElementsInPx;
+        return length / warnLength;
     }
 
     _calculateMinimalZoom({contextWidth, mainElementWidth}) {
