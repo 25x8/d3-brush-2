@@ -14,6 +14,10 @@ const SELECT_COLOR = "#13a81b";
 const SCENE = '#main-scene';
 const DANGER_COLOR = "#de1818";
 const WARNING_COLOR = "#d7e01f";
+const VIRTUAL_COLOR = "#ffffff";
+const HOVER_COLOR = "#d7e01f"
+
+export {DANGER_COLOR, WARNING_COLOR, HOVER_COLOR}
 
 
 class Scheme2D extends Singleton {
@@ -49,8 +53,8 @@ class Scheme2D extends Singleton {
 
         // инициализация плагина d3
 
-        const d3_data = data.map(({status, length, diameter, type, id}, index) => {
-
+        const d3_data = data.map((o, index) => {
+            const {status, length, diameter, type, id} = o;
             const newDatum = {
                 status,
                 height: length,
@@ -71,7 +75,7 @@ class Scheme2D extends Singleton {
             width: size.width,
             height: size.height,
             data: d3_data,
-            onClick: (item) => console.log(item)
+            onClick: this.fnClick
         });
 
         window.select = (id) => {
@@ -116,6 +120,7 @@ class Scheme2D extends Singleton {
             }
         })
         this.d3module.updateFocusColor();
+
     }
 
     /**
@@ -160,7 +165,7 @@ class Scheme2D extends Singleton {
         let updateStatusMap = false;
         let update = false;
 
-        if ((currentData.length === 0 && newData.length !== 0) || (currentData.length !== 0 && newData.length === 0) ) {
+        if ((currentData.length === 0 && newData.length !== 0) || (currentData.length !== 0 && newData.length === 0)) {
             update = true;
         } else {
 
@@ -191,6 +196,7 @@ class Scheme2D extends Singleton {
                     id,
                     color: getColor(index)
                 }))
+            console.log(d3_data)
             this.d3module.updateData(d3_data)
             if (Scheme2D.instance.select.id) Scheme2D.instance.selectItem();
         } else {
@@ -277,12 +283,24 @@ export {SELECT_COLOR, TYPE_K, TYPE_K_COLOR}
 export {Scheme2D};
 
 //todo
-// element fixed  +++
-// добавить код Андрея  +++
-// context zoom +++
-// минимальный зум 20 и в фокусе и в контексте +++
-// баг отскок от нижнего края при скролле +++
-// элементы фокуса прибить к правой стенке +++
-// изменение цвета +++
-// добавить index элемента в клике +++
-// расчет количества элементов
+// очень маленький элемент, зум при селекте сделать с максимальным отдалением
+// скрыть тултип при выделении контекста
+// 40% по боком самого большого svg элемента
+// вынести в отдельную константу index на цвет наведения
+// убрать тач
+//
+//
+// 3. шаг скролла +++
+// 4. что-то с цветами на миникарте +++
+// 5. цвет рамки К +++
+// 6. ширина К по максимальной svg
+// 10. максимальный зум - 60% от ширины самого большого svg эл-та
+// 7. зум при селекте - дефолтный (стартовый) +++
+// 8. тултип при зуме на контексте +++
+// 9. зум на фокусе - не показывать тултип +++
+
+// 11. цвета ховера и селекта в индекс +++
+// 12. окончание скролла - тултип показывает один эл-т, а указвтель над другим +++
+// 13. тач отключить +++
+// 14. фикс сигналов на миникарте
+

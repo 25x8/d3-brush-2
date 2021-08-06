@@ -5,7 +5,6 @@ import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {FocusMarker} from "./FocusMarker";
 import {
-    appendWarningIconToDrawingElement,
     appendWarningIconToFocus,
     calculateMaximumLength
 } from "../../utils/elementsTools";
@@ -13,7 +12,6 @@ import * as d3 from '../../utils/d3Lib';
 
 export class Focus extends Scene {
 
-    PARTS_NUMBER = 20;
     MIN_PX_IN_ELEMENT = 2;
     MIN_PX_FOR_WARN_SIGN = 10;
     markersData;
@@ -80,13 +78,13 @@ export class Focus extends Scene {
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
                 } else if(sourceEvent) {
-                    console.log(sourceEvent)
                     const {selectionDifference} = this.brushSystem.getSelectionDifference(selection);
 
                     if (!this.checkSelectionValid(selectionDifference)) {
                         this.brushSystem.moveBrush();
                     }
                 }
+                this.externalEvent && this.externalEvent();
             }
         });
 
@@ -187,7 +185,6 @@ export class Focus extends Scene {
                             yConverter: renderSystem.y
                         });
                     })
-                        .attr('stroke', '#b47e94')
                         .attr('fill', (d, index) => {
                             return d.color || getColor(index)
                         });

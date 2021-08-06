@@ -7,7 +7,7 @@ import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../../img/icons/test.svg';
 import {drawRectangle} from "../../utils/drawElement";
-import {SELECT_COLOR, TYPE_K} from "../../../../index";
+import {HOVER_COLOR, SELECT_COLOR, TYPE_K} from "../../../../index";
 import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
 
 
@@ -21,6 +21,8 @@ export class Context extends Scene {
 
     hoverline;
     bisect = d3.bisector(d => d.position);
+
+    isBrushGoing = false;
 
     constructor(container) {
         super(container);
@@ -69,7 +71,13 @@ export class Context extends Scene {
         this.brushSystem = new BrushSystem({
             svg: this.svg,
             yConverter: this.yAxis.y,
-            onBrushEnd: ({selection}) => {
+            onBrushStart: () => {
+                this.tooltip.hide();
+                this.tooltip.removeHoverColor();
+                this.hoverline.classList.remove('active');
+                this.render()
+            },
+            onBrushEnd: ({selection, sourceEvent}) => {
                 if (selection) {
 
                     const {
@@ -83,6 +91,12 @@ export class Context extends Scene {
 
                     this.brushSystem.clearBrush();
                 }
+                if(sourceEvent) {
+                    this._renderTooltipAndHoverine(sourceEvent);
+                    this.tooltip.show();
+                    this.hoverline.classList.add('active');
+                }
+
             }
         });
 
@@ -98,16 +112,15 @@ export class Context extends Scene {
 
         this.svg
             .on('mouseover', () => {
-
-                this.tooltip.show();
-                this.hoverline.classList.add('active');
+                if(!this.isBrushGoing) {
+                    this.tooltip.show();
+                    this.hoverline.classList.add('active');
+                }
             })
             .on('mousemove', (e) => {
-
                 this._renderTooltipAndHoverine(e);
             })
             .on('mouseout', () => {
-
                 this.tooltip.hide();
                 this.tooltip.removeHoverColor();
                 this.hoverline.classList.remove('active');
@@ -123,29 +136,31 @@ export class Context extends Scene {
 
                 setTimeout(() => {
                     clearInterval(renderWhileWheeling);
-                }, 200);
+                }, 300);
 
                 const newTopBorder = this.yAxis.y.invert(e.clientY) + deltaY;
 
                 if (newTopBorder > this.totalLength) {
-                    this.externalEvent(this.totalLength)
+                    this.externalEvent(this.totalLength);
                 } else if (newTopBorder < -50) {
                     return false;
                 } else {
-                    this.externalEvent(deltaY)
+                    this.externalEvent(deltaY);
                 }
+
+                this._renderTooltipAndHoverine(e);
             })
-            .on("click", (e) => {
+            .on('click', (e) => {
                 const elementCoords = this._getCordsAndIndex(e);
                 !elementCoords
                     ? this.handleClick(null)
                     : this.handleClick({...this.elementsData[elementCoords.index], index: elementCoords.index - 1});
 
-            });
+            })
+            .on('touch', null);
     }
 
     _renderTooltipAndHoverine(e) {
-
         const elementCoords = this._getCordsAndIndex(e);
 
         if (!elementCoords) {
@@ -252,10 +267,7 @@ export class Context extends Scene {
                             position: elementData.position
                         })
                     }
-
-
                 });
-
             },
             update: (update) => {
 
@@ -291,7 +303,7 @@ export class Context extends Scene {
         this.render = () => renderSystem.renderElements(this.visibleElements);
     }
 
-    _setSVGElementPosition({svgElement, elementData, index}) {
+    _setSVGElementPosition({svgElement, elementData}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
@@ -301,7 +313,7 @@ export class Context extends Scene {
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 2) - (interpolatedHeight / 2))
             .attr('y', this.yAxis.y(elementData.position))
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : elementData.color)
+            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color)
 
     }
 
@@ -319,8 +331,8 @@ export class Context extends Scene {
             height: interpolatedHeight
         }))
             .attr('stroke', 'black')
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index))
-            .style('stroke-width', '0.02rem')
+            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : getColor(index))
+            .style('stroke-width', '0.02rem');
 
         elementData.status && appendWarningIconToDrawingElement({
             element: svgGroup,
@@ -333,8 +345,15 @@ export class Context extends Scene {
 
     changeContextArea = (boundaries) => {
 
-        this.yAxis.updateY(boundaries[1], boundaries[0]);
-        this._getElementFromRange(boundaries);
+        if(boundaries) {
+            this.isBrushGoing = true;
+            this.yAxis.updateY(boundaries[1], boundaries[0]);
+            this._getElementFromRange(boundaries);
+        } else {
+            this.isBrushGoing = false;
+            this.tooltip.show();
+            this.hoverline.classList.add('active');
+        }
         this.render();
     }
 
@@ -375,18 +394,22 @@ export class Context extends Scene {
         this.render();
     }
 
-    selectElement(index) {
+    selectElement(index, selectionLength) {
 
         try {
-
             this.selectedElement && this.deselectElement();
             this.selectedElement = this.elementsData[index + 1];
-            // this.selectedElement = this.elementsData.find(el => el.id === id);
             this.selectedElement.select = true;
 
-            const {position, height} = this.selectedElement;
+            const {position} = this.selectedElement;
 
-            this.externalEvent([position - (height / 2), position + (height * 1.5)]);
+            if(position + (selectionLength * 1.5) > this.totalLength) {
+                this.externalEvent([this.totalLength - selectionLength, this.totalLength]);
+            } else if(position - (selectionLength / 2) < -50) {
+                this.externalEvent()
+            } else {
+                this.externalEvent([position - (selectionLength / 2), position + (selectionLength * 1.5)]);
+            }
 
         } catch (e) {
             alert('Выбранный элемент не найден')
