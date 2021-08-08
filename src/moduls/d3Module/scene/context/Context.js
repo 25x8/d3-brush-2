@@ -412,7 +412,7 @@ export class Context extends Scene {
             } else if(position - (selectionLength / 2) < -50) {
                 this.externalEvent()
             } else {
-                this.externalEvent([position - (selectionLength / 2), position + (selectionLength * 1.5)]);
+                this.externalEvent([position - (selectionLength / 2), position + (selectionLength /2)]);
             }
 
         } catch (e) {

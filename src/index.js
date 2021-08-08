@@ -75,24 +75,6 @@ class Scheme2D extends Singleton {
             onClick: this.fnClick
         });
 
-        window.select = (id) => {
-            this.d3module.selectElement(id)
-        }
-
-        window.updateData = () => {
-            Scheme2D.updateData([...window.tmp, {
-                "id": "cf3cbde0-6545-11ea-9059-a55ec199cee12345-2gfdv1",
-                "status": null,
-                "work": 0,
-                "length": 9.055,
-                "type": "1",
-                "data": {
-                    "depth": 18110,
-                    "alert": null,
-                    "alert_text": null,
-                }
-            }]);
-        }
     }
 
     /**
