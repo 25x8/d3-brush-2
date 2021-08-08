@@ -83,15 +83,14 @@ class Scheme2D extends Singleton {
      */
     changeMode = (mode) => {
         this.mode = mode;
-        this.data.forEach(({[mode]: val, type}, index) => {
-            // обновить цвет элемента
-            const color = mode === "work" ? getColor(val) : getColorFromMax(val);
+        this.data.forEach(({type}, index) => {
+
             if (type !== TYPE_K) {
+                const color = Scheme2D.getColor(index);
                 this.d3module.updateContextColor({index, color})
             }
         })
         this.d3module.updateFocusColor();
-
     }
 
     /**
