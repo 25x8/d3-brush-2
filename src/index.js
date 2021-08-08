@@ -58,7 +58,7 @@ class Scheme2D extends Singleton {
             const newDatum = {
                 status,
                 height: length,
-                width: 2,
+                width: 9,
                 type: type === "notknow" ? TYPE_K : type,
                 id,
                 color: getColor(index)

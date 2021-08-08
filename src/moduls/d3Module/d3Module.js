@@ -7,6 +7,8 @@ import {
     appendAllElementsToContainer
 } from "./utils/elementsTools";
 import Tooltip from "./Tooltip/tooltip";
+import {elementsConfig} from "./utils/elementsConfig";
+import {TYPE_K} from "../../index";
 
 export class D3Module {
     FOCUS_WIDTH = 50;
@@ -21,6 +23,8 @@ export class D3Module {
     focus;
 
     initScene({selector, width, height, data, onClick}) {
+        this._calculateAspectInSvgElements();
+        this._addWidthInSvgElements(data);
         this._createHTMLScenes({selector, width, height});
         this._createSVGScenes(data, width);
         this._createTooltip();
@@ -37,8 +41,8 @@ export class D3Module {
         this.focus.resize({
             height,
             width: this.FOCUS_WIDTH,
-            delta: 10
-        });
+            delta: 10,
+        }, width - this.FOCUS_WIDTH);
 
         this.context.resize({
             height,
@@ -47,10 +51,11 @@ export class D3Module {
     }
 
     updateData(data) {
-
+        this._addWidthInSvgElements(data);
         const updatedLengthAndData = calculateElementsPosition({
             data,
-            height: this.moduleContainer.offsetHeight
+            height: this.moduleContainer.offsetHeight,
+            contextWidth: this.context.width
         });
 
         this._addMainElement(updatedLengthAndData);
@@ -127,7 +132,8 @@ export class D3Module {
 
         const calculatedLengthAndData = calculateElementsPosition({
             data,
-            height: this.moduleContainer.offsetHeight
+            height: this.moduleContainer.offsetHeight,
+            contextWidth: width - this.FOCUS_WIDTH
         });
 
         this._addMainElement(calculatedLengthAndData);
@@ -183,6 +189,22 @@ export class D3Module {
 
     _addClickEventOnContext(event) {
         this.context.handleClick = event;
+    }
+
+    _calculateAspectInSvgElements() {
+        elementsConfig.forEach(el => {
+            const [, , width, height] = el.viewBox.split(" ");
+            el.widthAspect = height / width;
+        });
+    }
+
+    _addWidthInSvgElements(data) {
+        data.forEach(el => {
+            if(el.type !== TYPE_K) {
+                el.width =
+                    el.height / elementsConfig.find(conf => conf.id === el.type).widthAspect;
+            }
+        });
     }
 
 }

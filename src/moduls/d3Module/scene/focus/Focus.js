@@ -10,17 +10,21 @@ import {
 } from "../../utils/elementsTools";
 import * as d3 from '../../utils/d3Lib';
 
+
 export class Focus extends Scene {
 
     MIN_PX_IN_ELEMENT = 2;
     MIN_PX_FOR_WARN_SIGN = 10;
     markersData;
+    maximalWidth;
 
     constructor(container) {
         super(container);
     }
 
-    init({totalLength, minimalLength, maximalLength, data, contextWidth}) {
+    init({totalLength, minimalLength, maximalLength, data, contextWidth, maximalWidth}) {
+
+        this.maximalWidth = maximalWidth;
 
         this._configureLength({
             minimalLength, maximalLength, contextWidth, totalLength
@@ -221,7 +225,7 @@ export class Focus extends Scene {
     }
 
 
-    resize(size) {
+    resize(size, contextWidth) {
         this.yAxis.resize(size);
         this.brushSystem.resize(size);
         this.resizeHtmlAndSvg(size);
@@ -233,7 +237,7 @@ export class Focus extends Scene {
         });
 
         this._configureLength({
-            minimalLength: this.minBrushSelection, maximalLength, totalLength: this.getTotalLength()
+            minimalLength: this.minBrushSelection, maximalLength, totalLength: this.getTotalLength(), contextWidth
         });
 
         this._setDefaultSelection();
@@ -258,8 +262,11 @@ export class Focus extends Scene {
             maximalLength = minimalLength
         }
 
+
         this.setMinMaxSelection({min: minimalLength, max: maximalLength});
     }
+
+
 
     _calculateElementsNumber(length) {
         const numberElementsInPx = this.height / length;
@@ -273,15 +280,14 @@ export class Focus extends Scene {
         return length / warnLength;
     }
 
-    _calculateMinimalZoom({contextWidth, mainElementWidth}) {
-        const minZoomRation = 10 / (contextWidth / mainElementWidth);
-        return mainElementWidth * minZoomRation;
-    }
 
-    updateMarkersData({totalLength, minimalLength, maximalLength, data}) {
+
+    updateMarkersData({totalLength, minimalLength, maximalLength, data, maximalWidth, contextWidth}) {
+
+        this.maximalWidth = maximalWidth;
 
         this._configureLength({
-            minimalLength, maximalLength, totalLength
+            minimalLength, maximalLength, totalLength, contextWidth
         });
 
         this.yAxis.update(this.getTotalLength(), -this.MAIN_ELEMENT_SIZE);
@@ -314,7 +320,6 @@ export class Focus extends Scene {
     }
 
     checkSelectionValid(selectionDifference) {
-
         if (selectionDifference < this.minBrushSelection) {
             return false
         }

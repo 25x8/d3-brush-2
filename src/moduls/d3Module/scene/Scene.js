@@ -14,7 +14,7 @@ export class Scene {
     totalLength = 0;
     externalEvent;
     render;
-    MIN_ZOOM = 20;
+    MIN_ZOOM = 10;
 
 
     constructor(container) {

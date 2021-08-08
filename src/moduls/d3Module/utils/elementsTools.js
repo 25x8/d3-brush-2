@@ -1,8 +1,10 @@
 import warningSign from '../../../img/icons/warning.svg';
 import dangerSign from '../../../img/icons/alarm.svg';
+import {TYPE_K} from "../../../index";
 
 const MIN_PX = 10;
 const START_MIN = Number.MAX_SAFE_INTEGER;
+const START_MAX = Number.MIN_SAFE_INTEGER;
 
 
 export function createHTMLElement({name, width, height}) {
@@ -13,30 +15,39 @@ export function createHTMLElement({name, width, height}) {
     return el;
 }
 
-export function calculateElementsPosition({data, height}) {
+export function calculateElementsPosition({data, height, contextWidth}) {
 
     let totalLength = 0;
     let minimalLength = START_MIN;
+    let maximalWidth = START_MAX;
 
     const dataWithCalculatedPosition = data.map(el => {
 
 
         el.position = totalLength;
-        el.height < minimalLength && (minimalLength = el.height)
+        el.height < minimalLength && (minimalLength = el.height);
+
+        if(el.type !== TYPE_K) {
+            if(el.width > maximalWidth) {
+                maximalWidth = el.width;
+            }
+        }
 
         totalLength += el.height;
 
         return Object.assign({}, el);
     });
 
-
-
+    // const calculatedMinZoom = calculateMinimalZoom({contextWidth, maximalWidth});
+    // minimalLength = calculatedMinZoom > minimalLength ? calculatedMinZoom : minimalLength;
     minimalLength === START_MIN && (minimalLength = 0);
+
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 
     return {
         minimalLength,
         maximalLength,
+        maximalWidth,
         totalLength,
         data: dataWithCalculatedPosition
     }
@@ -49,7 +60,7 @@ export function appendAllElementsToContainer({elements, container}) {
 }
 
 export function calculateMaximumLength({minimalLength, totalLength, height}) {
-    console.log(minimalLength)
+
     if(minimalLength === 0 ) {
         return  0
     }
@@ -94,4 +105,11 @@ export function appendWarningIconToFocus({element, status, width, y, x}) {
         .attr('width', width)
         .attr('x', x)
         .attr('y', y);
+}
+
+function calculateMinimalZoom({contextWidth, maximalWidth}) {
+    console.log(contextWidth)
+    const minZoomRation = (contextWidth / maximalWidth);
+    console.log('minZoomRation', minZoomRation)
+    return  minZoomRation  ;
 }

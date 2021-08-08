@@ -81,11 +81,13 @@ export class BrushSystem {
     }
 
     setSelectionFromWheel(deltaY) {
+        const absDeltaY = Math.abs(deltaY);
         const selectionDiff = this.currentSelection[1] - this.currentSelection[0];
+        const step = (selectionDiff / (absDeltaY * 2)) * absDeltaY;
 
         deltaY < 0
-            ? deltaY += (Math.abs(deltaY) / selectionDiff) * 15
-            : deltaY -= (Math.abs(deltaY) / selectionDiff) * 15
+            ? deltaY = -step
+            : deltaY = step;
 
         this.currentSelection = this.currentSelection.map(el => el + deltaY);
 

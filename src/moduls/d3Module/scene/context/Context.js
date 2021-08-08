@@ -22,14 +22,16 @@ export class Context extends Scene {
     hoverline;
     bisect = d3.bisector(d => d.position);
 
+    maximalWidth;
     isBrushGoing = false;
 
     constructor(container) {
         super(container);
     }
 
-    init({totalLength, minimalLength, data}) {
+    init({totalLength, minimalLength, maximalWidth, data}) {
 
+        this.maximalWidth = maximalWidth;
         this.elementsData = data;
         this.visibleElements = data;
 
@@ -79,7 +81,6 @@ export class Context extends Scene {
             },
             onBrushEnd: ({selection, sourceEvent}) => {
                 if (selection) {
-
                     const {
                         convertedSelection,
                         selectionDifference
@@ -321,7 +322,7 @@ export class Context extends Scene {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
-        const interpolatedWidth = this.yAxis.y(elementData.width + startAxisPosition);
+        const interpolatedWidth = this.yAxis.y(this.maximalWidth + startAxisPosition);
 
 
         drawElement.attr('d', drawRectangle({
@@ -373,8 +374,9 @@ export class Context extends Scene {
         return this.visibleElements[0];
     }
 
-    updateData({data, minimalLength, totalLength}) {
+    updateData({data, minimalLength, totalLength, maximalWidth}) {
 
+        this.maximalWidth = maximalWidth;
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
 
