@@ -14,7 +14,7 @@ import * as d3 from '../../utils/d3Lib';
 export class Focus extends Scene {
 
     MIN_PX_IN_ELEMENT = 2;
-    MIN_PX_FOR_WARN_SIGN = 10;
+    MIN_PX_FOR_WARN_SIGN = this.MIN_PX_IN_ELEMENT * 5;
     markersData;
     maximalWidth;
 
@@ -59,7 +59,7 @@ export class Focus extends Scene {
             svg: this.svg,
             delta: 0,
             yConverter: this.yAxis.y,
-            onBrush: ({selection,sourceEvent}) => {
+            onBrush: ({selection, sourceEvent}) => {
 
                 const {
                     convertedSelection,
@@ -72,7 +72,7 @@ export class Focus extends Scene {
                     this.externalEvent && this.externalEvent(convertedSelection);
                     this.brushSystem.setCurrentSelection(convertedSelection);
 
-                } else if(!sourceEvent) {
+                } else if (!sourceEvent) {
                     this.externalEvent && this.externalEvent(convertedSelection);
                     this.brushSystem.setCurrentSelection(convertedSelection);
                 }
@@ -81,7 +81,7 @@ export class Focus extends Scene {
             onBrushEnd: ({selection, sourceEvent}) => {
                 if (!selection) {
                     this.brushSystem.moveBrushToDefault();
-                } else if(sourceEvent) {
+                } else if (sourceEvent) {
                     const {selectionDifference} = this.brushSystem.getSelectionDifference(selection);
 
                     if (!this.checkSelectionValid(selectionDifference)) {
@@ -117,7 +117,33 @@ export class Focus extends Scene {
         const clusters = [];
         const partsNumber = this._calculateElementsNumber(totalLength);
         const warnNumber = this._calculateWarnNumber(totalLength);
-        const warnStep = partsNumber / warnNumber;
+
+        if (data.length > warnNumber) {
+            const warnStep = data.length / warnNumber;
+
+            for (let i = 1; i <= warnNumber; i++) {
+
+                let warningSignal = null;
+
+                for (let j = Math.round(warnStep * (i - 1)) + 1; j < Math.round(warnStep * i); j++) {
+
+                    const status = data[j].status;
+
+
+                    if (status) {
+                        warningSignal !== 'danger' && (warningSignal = status);
+                    }
+                }
+
+                console.log(Math.round(warnStep * i))
+
+                if (warningSignal) {
+                    data[Math.round(warnStep * i)]
+                        ? data[Math.round(warnStep * i)].calcStatus = warningSignal
+                        : data[Math.round(warnStep * i) - 1].calcStatus = warningSignal
+                }
+            }
+        }
 
         if (data.length > partsNumber) {
 
@@ -125,26 +151,24 @@ export class Focus extends Scene {
             const partLength = totalLength / partsNumber;
 
             for (let i = 1; i <= partsNumber; i++) {
-
                 const nextItem = Object.assign({}, data[Math.round(partStep * i)]);
-
                 const itemsColor = [];
 
                 let warningSignal = null;
 
-                for (let j = Math.round(partStep * (i - 1)) + 1; j < Math.round(partStep * i); j++) {
-                    const status = data[j].status;
+                for (let j = Math.round(partStep * (i - 1)); j < Math.round(partStep * i); j++) {
+                    const status = data[j].calcStatus;
 
                     itemsColor.push(data[j].color);
 
                     if (status) {
-                        warningSignal !== 'danger' && (warningSignal = status);
+                        warningSignal = status;
                     }
                 }
 
                 const interpolatedColor = d3.interpolateRgb(...itemsColor)(0.5);
 
-                warningSignal && (nextItem.status = warningSignal);
+                nextItem.status = warningSignal;
                 nextItem.color = interpolatedColor;
                 nextItem.height = partLength;
                 nextItem.position = partLength * (i - 1);
@@ -268,8 +292,6 @@ export class Focus extends Scene {
         this.setMinMaxSelection({min: minimalLength, max: maximalLength});
     }
 
-
-
     _calculateElementsNumber(length) {
         const numberElementsInPx = this.height / length;
         const elementLength = this.MIN_PX_IN_ELEMENT / numberElementsInPx;
@@ -281,8 +303,6 @@ export class Focus extends Scene {
         const warnLength = this.MIN_PX_FOR_WARN_SIGN / numberElementsInPx;
         return length / warnLength;
     }
-
-
 
     updateMarkersData({totalLength, minimalLength, maximalLength, data, maximalWidth, contextWidth}) {
 
