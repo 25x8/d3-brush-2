@@ -1,9 +1,6 @@
-import './test';
-
 import {Singleton} from "./moduls/patterns";
 import {getColor, getColorFromMax} from "./moduls/interpolateColor";
 import {D3Module} from "./moduls/d3Module/d3Module";
-import './test'
 
 const TYPE_K = "k";
 const TYPE_K_COLOR = "#2a77b6";
@@ -61,7 +58,7 @@ class Scheme2D extends Singleton {
                 width: 9,
                 type: type === "notknow" ? TYPE_K : type,
                 id,
-                color: getColor(index)
+                color: Scheme2D.getColor(index)
             }
             //
             // length && (newDatum.height = length);
@@ -77,6 +74,25 @@ class Scheme2D extends Singleton {
             data: d3_data,
             onClick: this.fnClick
         });
+
+        window.select = (id) => {
+            this.d3module.selectElement(id)
+        }
+
+        window.updateData = () => {
+            Scheme2D.updateData([...window.tmp, {
+                "id": "cf3cbde0-6545-11ea-9059-a55ec199cee12345-2gfdv1",
+                "status": null,
+                "work": 0,
+                "length": 9.055,
+                "type": "1",
+                "data": {
+                    "depth": 18110,
+                    "alert": null,
+                    "alert_text": null,
+                }
+            }]);
+        }
     }
 
     /**
@@ -166,7 +182,7 @@ class Scheme2D extends Singleton {
                     width: 2,
                     type: type === "notknow" ? TYPE_K : type,
                     id,
-                    color: getColor(index)
+                    color: Scheme2D.getColor(index)
                 }))
 
             this.d3module.updateData(d3_data)

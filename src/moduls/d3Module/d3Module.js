@@ -1,4 +1,4 @@
-import './temp-style.css';
+import './styles.css';
 import {Context} from "./scene/context/Context";
 import {Focus} from "./scene/focus/Focus";
 import {
@@ -79,6 +79,7 @@ export class D3Module {
     }
 
     selectElement(index) {
+        console.log(index)
         this.context.selectElement(index, this.focus.brushSystem.defaultSelectionDifference)
     }
 

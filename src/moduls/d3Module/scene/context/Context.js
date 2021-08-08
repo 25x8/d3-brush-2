@@ -332,7 +332,7 @@ export class Context extends Scene {
             height: interpolatedHeight
         }))
             .attr('stroke', 'black')
-            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : getColor(index))
+            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color)
             .style('stroke-width', '0.02rem');
 
         elementData.status && appendWarningIconToDrawingElement({
@@ -351,9 +351,9 @@ export class Context extends Scene {
             this.yAxis.updateY(boundaries[1], boundaries[0]);
             this._getElementFromRange(boundaries);
         } else {
-            this.isBrushGoing = false;
-            this.tooltip.show();
-            this.hoverline.classList.add('active');
+            if(this.isBrushGoing) {
+                this.isBrushGoing = false;
+            }
         }
         this.render();
     }
@@ -404,6 +404,8 @@ export class Context extends Scene {
             this.selectedElement.select = true;
 
             const {position} = this.selectedElement;
+
+            this.isBrushGoing = true;
 
             if(position + (selectionLength * 1.5) > this.totalLength) {
                 this.externalEvent([this.totalLength - selectionLength, this.totalLength]);
