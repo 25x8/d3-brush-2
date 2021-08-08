@@ -42,6 +42,7 @@ export class D3Module {
             height,
             width: this.FOCUS_WIDTH,
             delta: 10,
+            data: this.context.elementsData
         }, width - this.FOCUS_WIDTH);
 
         this.context.resize({

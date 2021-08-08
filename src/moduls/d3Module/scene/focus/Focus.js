@@ -240,6 +240,8 @@ export class Focus extends Scene {
             minimalLength: this.minBrushSelection, maximalLength, totalLength: this.getTotalLength(), contextWidth
         });
 
+        this._createMarkerClusters(size.data)
+
         this._setDefaultSelection();
         this.updateBoundaries();
 

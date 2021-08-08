@@ -183,7 +183,6 @@ class Scheme2D extends Singleton {
         Scheme2D.instance.data = newData;
         // todo andrey обновить description
 
-        console.log("newData",newData)
         // поменялась схема
         if (update) {
             // todo обновить схему
@@ -196,7 +195,7 @@ class Scheme2D extends Singleton {
                     id,
                     color: getColor(index)
                 }))
-            console.log(d3_data)
+
             this.d3module.updateData(d3_data)
             if (Scheme2D.instance.select.id) Scheme2D.instance.selectItem();
         } else {
