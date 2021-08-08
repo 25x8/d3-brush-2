@@ -338,7 +338,9 @@ export class Focus extends Scene {
     }
 
     changeFocusArea = (boundaries) => {
-        this.brushSystem.moveBrush(boundaries);
+        boundaries
+            ? this.brushSystem.moveBrush(boundaries)
+            : this.brushSystem.moveBrushToDefault();
     }
 
     checkSelectionValid(selectionDifference) {
