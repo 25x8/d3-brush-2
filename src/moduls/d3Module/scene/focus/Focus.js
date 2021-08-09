@@ -134,9 +134,7 @@ export class Focus extends Scene {
                         warningSignal !== 'danger' && (warningSignal = status);
                     }
                 }
-
-                console.log(Math.round(warnStep * i))
-
+                
                 if (warningSignal) {
                     data[Math.round(warnStep * i)]
                         ? data[Math.round(warnStep * i)].calcStatus = warningSignal
