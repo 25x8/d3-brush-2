@@ -319,10 +319,9 @@ export class Context extends Scene {
 
     _setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
 
-        const elementWidth = this.maximalWidth || elementData.width || 4;
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
-        const interpolatedWidth = this.yAxis.y(elementWidth + startAxisPosition);
+        const interpolatedWidth = this.yAxis.y(this.maximalWidth + startAxisPosition);
 
 
         drawElement.attr('d', drawRectangle({

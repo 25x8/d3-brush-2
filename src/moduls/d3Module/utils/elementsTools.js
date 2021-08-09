@@ -44,6 +44,8 @@ export function calculateElementsPosition({data, height, contextWidth}) {
 
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 
+    maximalWidth === START_MAX && (maximalWidth = 4);
+
     return {
         minimalLength,
         maximalLength,
