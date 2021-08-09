@@ -3,4 +3,4 @@
 /dist
 package-lock.json
 stats.json
-./src/index.js
+/src/index.js
