@@ -79,8 +79,7 @@ export class D3Module {
     }
 
     selectElement(index) {
-        console.log(index)
-        this.context.selectElement(index, this.focus.brushSystem.defaultSelectionDifference)
+        this.context.selectElement(index, this.focus.brushSystem.getCurrentSelectionDifference())
     }
 
     deselectElement() {

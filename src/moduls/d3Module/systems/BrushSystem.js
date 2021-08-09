@@ -33,11 +33,9 @@ export class BrushSystem {
     }
 
     resize({width, height, delta = 0}) {
-
         this.defaultSelection = [delta, height - delta];
         this.brushArea.extent([[0, delta], [width, height - delta]]);
         this.brush.call(this.brushArea);
-
     }
 
     moveBrush(boundaries,) {
@@ -72,7 +70,6 @@ export class BrushSystem {
 
     setDefaultSelection(boundaries) {
         this.defaultSelection = boundaries;
-        this.defaultSelectionDifference = boundaries[1] - boundaries[0];
     }
 
     setWheelBoundariesSelection({min, max}) {
@@ -124,5 +121,9 @@ export class BrushSystem {
             convertedSelection,
             selectionDifference: convertedSelection.reduce((a, b) => b - a)
         };
+    }
+
+    getCurrentSelectionDifference() {
+        return this.currentSelection[1] - this.currentSelection[0];
     }
 }

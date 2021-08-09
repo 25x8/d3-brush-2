@@ -14,6 +14,7 @@ const WARNING_COLOR = "#d7e01f";
 const VIRTUAL_COLOR = "#ffffff";
 const HOVER_COLOR = "#d7e01f"
 
+import "./test"
 export {DANGER_COLOR, WARNING_COLOR, HOVER_COLOR}
 
 
@@ -74,6 +75,27 @@ class Scheme2D extends Singleton {
             data: d3_data,
             onClick: this.fnClick
         });
+
+
+        window.select = (id) => {
+            this.d3module.selectElement(id)
+        }
+
+        window.updateData = () => {
+            Scheme2D.updateData([...window.tmp, {
+                "id": "cf3cbde0-6545-11ea-9059-a55ec199cee12345-2gfdv1",
+                "status": null,
+                "work": 0,
+                "length": 9.055,
+                "type": "1",
+                "data": {
+                    "depth": 18110,
+                    "alert": null,
+                    "alert_text": null,
+                }
+            }]);
+        }
+
 
     }
 
@@ -139,13 +161,14 @@ class Scheme2D extends Singleton {
             update = true;
         } else {
 
-            if(currentData.length !== newData.length) {
+            if (currentData.length !== newData.length) {
                 update = true;
             }
 
             try {
                 if (currentData[0].id !== newData[0].id) update = true;
-            } catch (e) {}
+            } catch (e) {
+            }
         }
 
 
@@ -253,5 +276,6 @@ export {Scheme2D};
 
 //todo
 // 1. максимальный зум - 60% от ширины самого большого svg эл-та
-
+// 2. ширина к-элементов при отсутствии svg
+// 2. селект с текущим зумом
 

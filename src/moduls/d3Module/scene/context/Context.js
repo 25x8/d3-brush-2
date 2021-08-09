@@ -272,7 +272,6 @@ export class Context extends Scene {
             },
             update: (update) => {
 
-
                 update.each(function (elementData, index) {
 
                     if (elementData.type === TYPE_K) {
@@ -320,9 +319,10 @@ export class Context extends Scene {
 
     _setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
 
+        const elementWidth = this.maximalWidth || elementData.width || 4;
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
-        const interpolatedWidth = this.yAxis.y(this.maximalWidth + startAxisPosition);
+        const interpolatedWidth = this.yAxis.y(elementWidth + startAxisPosition);
 
 
         drawElement.attr('d', drawRectangle({
@@ -397,7 +397,6 @@ export class Context extends Scene {
     }
 
     selectElement(index, selectionLength) {
-
         try {
             this.selectedElement && this.deselectElement();
             this.selectedElement = this.elementsData[index + 1];
@@ -407,7 +406,7 @@ export class Context extends Scene {
 
             this.isBrushGoing = true;
 
-            if(position + (selectionLength * 1.5) > this.totalLength) {
+            if(position + (selectionLength / 2) > this.totalLength) {
                 this.externalEvent([this.totalLength - selectionLength, this.totalLength]);
             } else if(position - (selectionLength / 2) < -50) {
                 this.externalEvent()
