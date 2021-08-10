@@ -9,52 +9,24 @@
 <div id="main-scene"></div>
 </body>
 <script>
+
+    const p = []
+    for(let i = 0; i < 111; i++) {
+        p.push({
+            "id": "c579e3a0-6545-11ea-8e5a-55a2532bb9c9" + i,
+            "status": null,
+            "work": 0,
+            "length": 12,
+            "type": "1",
+            "data": {
+                "depth": 552355,
+                "alert": null,
+                "alert_text": null,
+            }
+        })
+    }
     Scheme2D.init({
-        data: [{
-            "id": "k_11",
-            "status": "danger",
-            "length": 230,
-            "type": "k",
-            "diameter": 10,
-            "data": {
-                "order": 12,
-                "number": null,
-                "length": 230000,
-            }
-        }, {
-            "id": "k_12",
-            "status": null,
-            "length": 28.3,
-            "type": "k",
-            "diameter": 10,
-            "data": {
-                "order": 13,
-                "number": null,
-                "length": 28300,
-            }
-        }, {
-            "id": "k_13",
-            "status": null,
-            "length": 6.63,
-            "type": "k",
-            "diameter": 10,
-            "data": {
-                "order": 14,
-                "number": null,
-                "length": 6630,
-            }
-        }, {
-            "id": "k_14",
-            "status": null,
-            "length": 28.3,
-            "type": "k",
-            "diameter": 10,
-            "data": {
-                "order": 15,
-                "number": null,
-                "length": 28300,
-            }
-        }],
+        data: p,
         // data: [],
         element: "#main-scene",
         mode: "work",
@@ -62,8 +34,8 @@
             text: "main test"
         },
         size: {
-            width: 120,
-            height: 391
+            width: 212 ,
+            height: 476
         },
         fnTooltipItem: (data, mode) => `id: ${data.id}<br>val: ${data[mode]}`,
         fnTooltipMain: (data) => `<i>MAIN</i>: ${data.text}`,

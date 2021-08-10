@@ -130,7 +130,9 @@ export class Context extends Scene {
             .on('wheel', (e) => {
                 e.preventDefault();
 
-                const {deltaY} = e;
+                let {deltaY} = e;
+               deltaY = deltaY < 0 ? -53 : 53;
+
                 const renderWhileWheeling = setInterval(() => {
                     this._renderTooltipAndHoverine(e);
                 }, 25);
