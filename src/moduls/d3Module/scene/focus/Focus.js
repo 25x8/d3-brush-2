@@ -286,7 +286,6 @@ export class Focus extends Scene {
             maximalLength = minimalLength
         }
 
-
         this.setMinMaxSelection({min: minimalLength, max: maximalLength});
     }
 
@@ -321,6 +320,8 @@ export class Focus extends Scene {
         });
 
         this.render();
+
+        this.brushSystem.checkCurrentSelection();
 
         try {
             this.brushSystem.moveBrush();

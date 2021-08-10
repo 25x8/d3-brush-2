@@ -15,7 +15,7 @@ export function createHTMLElement({name, width, height}) {
     return el;
 }
 
-export function calculateElementsPosition({data, height, contextWidth}) {
+export function calculateElementsPosition({data, height}) {
 
     let totalLength = 0;
     let minimalLength = START_MIN;
@@ -38,9 +38,11 @@ export function calculateElementsPosition({data, height, contextWidth}) {
         return Object.assign({}, el);
     });
 
+    const averageHeight = totalLength / data.length - 1;
+
     // const calculatedMinZoom = calculateMinimalZoom({contextWidth, maximalWidth});
     // minimalLength = calculatedMinZoom > minimalLength ? calculatedMinZoom : minimalLength;
-    minimalLength === START_MIN && (minimalLength = 0);
+    minimalLength = averageHeight;
 
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 
@@ -73,10 +75,11 @@ export function calculateMaximumLength({minimalLength, totalLength, height}) {
 
     const pxInMeter = totalLength / height;
     const metersInMinPxs = pxInMeter * MIN_PX;
-    const elementsInMinPxs = metersInMinPxs / minimalLength;
+    const elementsInMinPxs = (metersInMinPxs / minimalLength) ;
 
     // max visible length
-    return  totalLength / elementsInMinPxs;
+
+    return  totalLength / elementsInMinPxs ;
 }
 
 export function appendWarningIcon({element, status}){

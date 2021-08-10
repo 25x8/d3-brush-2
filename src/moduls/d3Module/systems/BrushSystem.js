@@ -6,7 +6,7 @@ export class BrushSystem {
     brush;
     yConverter;
     defaultSelection;
-    currentSelection;
+    currentSelection = [];
     minSelection;
     maxSelection;
     defaultSelectionDiff;
@@ -68,6 +68,19 @@ export class BrushSystem {
         this.brush.call(this.brushArea.clear);
     }
 
+    checkCurrentSelection() {
+
+        const selectionDifference = this.getCurrentSelectionDifference()
+        const {selectionDifference: defaultSelectionDifference} = this.getSelectionDifference(this.getDefaultSelection());
+
+        const defaultOverLength = selectionDifference - defaultSelectionDifference;
+
+        if(defaultOverLength > 0) {
+            this.currentSelection[1] -= defaultOverLength;
+        }
+
+    }
+
     setCurrentSelection(selection) {
         this.currentSelection = selection;
     }
@@ -102,7 +115,7 @@ export class BrushSystem {
 
         if (this.currentSelection[1] > this.maxSelection) {
 
-            const {selectionDifference} = this.getSelectionDifference(this.getCurrentSelection());
+            const selectionDifference = this.getCurrentSelectionDifference();
 
             this.currentSelection[0] = this.maxSelection - selectionDifference;
             this.currentSelection[1] = this.maxSelection;
@@ -110,7 +123,9 @@ export class BrushSystem {
     }
 
     getCurrentSelection() {
-        return this.currentSelection.map(this.yConverter);
+        return this.currentSelection
+            ? this.currentSelection.map(this.yConverter)
+            : [];
     }
 
     getDefaultSelection() {

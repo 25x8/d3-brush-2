@@ -2,10 +2,10 @@ import * as d3 from '../../utils/d3Lib';
 import {Scene} from "../Scene";
 import {YAxis} from "../../systems/yAxis";
 import {elementsConfig} from "../../utils/elementsConfig";
-import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../../img/icons/test.svg';
+import arrowLeft from '../../../../img/icons/arrow-left.svg';
 import {drawRectangle} from "../../utils/drawElement";
 import {HOVER_COLOR, SELECT_COLOR, TYPE_K} from "../../../../index";
 import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
@@ -92,7 +92,7 @@ export class Context extends Scene {
 
                     this.brushSystem.clearBrush();
                 }
-                if(sourceEvent) {
+                if (sourceEvent) {
                     this._renderTooltipAndHoverine(sourceEvent);
                     this.tooltip.show();
                     this.hoverline.classList.add('active');
@@ -113,7 +113,7 @@ export class Context extends Scene {
 
         this.svg
             .on('mouseover', () => {
-                if(!this.isBrushGoing) {
+                if (!this.isBrushGoing) {
                     this.tooltip.show();
                     this.hoverline.classList.add('active');
                 }
@@ -186,7 +186,7 @@ export class Context extends Scene {
 
     _getCordsAndIndex(e) {
         let {x, y} = this.svg.node().getBoundingClientRect()
-        let {clientX: currentX, clientY: currentY} = e;
+        let {clientX: currentX = 0, clientY: currentY = 0} = e;
 
         currentX -= x;
         currentY -= y;
@@ -245,10 +245,17 @@ export class Context extends Scene {
 
                     } else {
 
-                        const svgElement = d3.select(this).append('svg');
+
+                        const group = d3.select(this).append('g')
+                            .attr('class', renderSystem.selector);
+                        const svgElement = group.append('svg');
+
+                        if (elementData.select) {
+                            context.addIndicator(group, elementData)
+                        }
 
                         svgElement
-                            .attr('class', renderSystem.selector)
+
                             .attr('stroke', 'black')
                             .attr('viewBox', d => {
                                 const els = elementsConfig.find(el => el.id === d.type);
@@ -282,10 +289,17 @@ export class Context extends Scene {
                         context._setDrawElementPosition({elementData, drawElement, svgGroup, index})
 
                     } else {
-
-                        const svgElement = d3.select(this);
+                        const group = d3.select(this);
+                        let svgElement = group;
+                        if (elementData.id !== 'main-element') {
+                            svgElement = svgElement.select('svg');
+                        }
 
                         context._setSVGElementPosition({svgElement, elementData, index});
+
+                        if (elementData.select) {
+                            context.addIndicator(group, elementData)
+                        }
 
                         elementData.status && appendWarningIcon({
                             element: svgElement,
@@ -345,12 +359,12 @@ export class Context extends Scene {
 
     changeContextArea = (boundaries) => {
 
-        if(boundaries) {
+        if (boundaries) {
             this.isBrushGoing = true;
             this.yAxis.updateY(boundaries[1], boundaries[0]);
             this._getElementFromRange(boundaries);
         } else {
-            if(this.isBrushGoing) {
+            if (this.isBrushGoing) {
                 this.isBrushGoing = false;
             }
         }
@@ -405,12 +419,12 @@ export class Context extends Scene {
 
             this.isBrushGoing = true;
 
-            if(position + (selectionLength / 2) > this.totalLength) {
+            if (position + (selectionLength / 2) > this.totalLength) {
                 this.externalEvent([this.totalLength - selectionLength, this.totalLength]);
-            } else if(position - (selectionLength / 2) < -50) {
+            } else if (position - (selectionLength / 2) < -50) {
                 this.externalEvent([-50, -50 + selectionLength]);
             } else {
-                this.externalEvent([position - (selectionLength / 2), position + (selectionLength /2)]);
+                this.externalEvent([position - (selectionLength / 2), position + (selectionLength / 2)]);
             }
 
         } catch (e) {
@@ -422,6 +436,24 @@ export class Context extends Scene {
         this.selectedElement.select = false;
         this.selectedElement = null;
         this.render();
+    }
+
+    addIndicator(group, elementData) {
+        const startAxisPosition = this.yAxis.getStartPosition();
+        const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
+        const indicator = group.select('.indicator');
+        indicator.node() && indicator.remove();
+
+
+        group
+            .append('image')
+            .attr('class', 'indicator')
+            .attr('xlink:href', arrowLeft)
+            .attr('width', interpolatedHeight)
+            .attr('height', interpolatedHeight)
+            .attr('x', (this.width / 1.5))
+            .attr('y', this.yAxis.y(elementData.position))
+
     }
 
 }
