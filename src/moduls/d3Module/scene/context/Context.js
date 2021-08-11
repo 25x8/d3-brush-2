@@ -9,7 +9,6 @@ import arrowLeft from '../../../../img/icons/arrow-left.svg';
 import {drawRectangle} from "../../utils/drawElement";
 import {HOVER_COLOR, SELECT_COLOR, TYPE_K} from "../../../../index";
 import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
-import star from "d3-shape/src/symbol/star";
 
 
 export class Context extends Scene {
@@ -94,9 +93,11 @@ export class Context extends Scene {
                     this.brushSystem.clearBrush();
                 }
                 if (sourceEvent) {
-                    this._renderTooltipAndHoverine(sourceEvent);
-                    this.tooltip.show();
-                    this.hoverline.classList.add('active');
+
+                       this._renderTooltipAndHoverine(sourceEvent);
+                       this.tooltip.show();
+                       this.hoverline.classList.add('active');
+
                 }
 
             }
@@ -112,6 +113,8 @@ export class Context extends Scene {
 
         this.hoverline = document.querySelector('#hover-line');
 
+        let lastTap = 0;
+
         this.svg
             .on('mouseover', () => {
                 if (!this.isBrushGoing) {
@@ -120,12 +123,17 @@ export class Context extends Scene {
                 }
             })
             .on('mousemove', (e) => {
+                if (!this.isBrushGoing) {
+                    this.tooltip.show();
+                    this.hoverline.classList.add('active');
+                }
                 this._renderTooltipAndHoverine(e);
             })
             .on('mouseout', () => {
                 this.tooltip.hide();
                 this.tooltip.removeHoverColor();
                 this.hoverline.classList.remove('active');
+                this.isBrushGoing = false;
                 this.render()
             })
             .on('wheel', (e) => {
@@ -162,10 +170,27 @@ export class Context extends Scene {
                     : this.handleClick({...this.elementsData[elementCoords.index], index: elementCoords.index - 1});
 
             })
-            .on('touch', null);
+            .on('touchstart',  (e) => {
+                e.preventDefault();
+                if(e.timeStamp - lastTap < 300) {
+                    const elementCoords = this._getCordsAndIndex(e.targetTouches[0]);
+                    !elementCoords
+                        ? this.handleClick(null)
+                        : this.handleClick({...this.elementsData[elementCoords.index], index: elementCoords.index - 1});
+                } else {
+                    this._renderTooltipAndHoverine(e.targetTouches[0]);
+                    this.tooltip.show();
+                    this.hoverline.classList.add('active');
+                }
+                lastTap = e.timeStamp;
+            })
+
+
+
     }
 
     _renderTooltipAndHoverine(e) {
+
         const elementCoords = this._getCordsAndIndex(e);
 
         if (!elementCoords) {
@@ -175,6 +200,7 @@ export class Context extends Scene {
         const {currentY, index} = elementCoords;
 
         const {clientX, clientY} = e;
+
 
         this.hoverline.style.transform = `translateY(${currentY}px)`;
 
@@ -350,7 +376,7 @@ export class Context extends Scene {
 
     }
 
-    _setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
+    _setDrawElementPosition({drawElement, elementData, svgGroup}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
@@ -460,10 +486,11 @@ export class Context extends Scene {
     }
 
     addIndicator(group, elementData) {
-        const startAxisPosition = this.yAxis.getStartPosition();
-        const s = this.yAxis.y((elementData.height) + startAxisPosition);
+        const startAxisPosition = this.yAxis.getStartPosition()
         const interpolatedHeight = 10;
         const indicator = d3.select('.indicator');
+        const interpolatedWidth = this.yAxis.y(elementData.width  + startAxisPosition) ;
+
 
         indicator.node() && indicator.remove();
 
@@ -473,14 +500,12 @@ export class Context extends Scene {
             .attr('xlink:href', arrowLeft)
             .attr('width', interpolatedHeight)
             .attr('height', interpolatedHeight)
-            .attr('x', (this.width / 1.5))
+            .attr('x',  (this.width / 2) + (interpolatedWidth) + 15)
             .attr('y', this.yAxis.y(elementData.position + 5) )
             .attr('viewBox', '0 0 100 100')
             .style('fill', SELECT_COLOR)
             .append('polygon')
             .attr('points', '0,50 100,0 100,100');
-
-
     }
 
 }

@@ -20,6 +20,7 @@ export class BrushSystem {
 
         this.brushArea = d3.brushY()
             .extent([[0, delta], [width, height - delta]])
+            .touchable(null)
             .on('start', onBrushStart)
             .on('brush', onBrush)
             .on('end', onBrushEnd);

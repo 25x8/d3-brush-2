@@ -42,7 +42,6 @@ export class Focus extends Scene {
     _initYAxis() {
 
         const endPosition = this.getTotalLength();
-        console.log(endPosition)
 
         this.yAxis = new YAxis({
             svg: this.svg,
@@ -213,7 +212,7 @@ export class Focus extends Scene {
                         });
                     })
                         .attr('fill', (d, index) => {
-                            return d.id !== 'main-element' ? d.color || getColor(index) : 'black'
+                            return  d.color || getColor(index)
                         });
 
                     elementData.status && appendWarningIconToFocus({
