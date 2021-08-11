@@ -228,7 +228,7 @@ window.tmp = [
         "status": null,
         "work": 0,
         "length": 9.055,
-        "type": "1",
+        "type": "e3885e80",
         "data": {
             "depth": 18110,
             "alert": null,
@@ -250,7 +250,7 @@ window.tmp = [
         "status": null,
         "work": 0,
         "length": 9.055,
-        "type": "1",
+        "type": "e3885e80",
         "data": {
             "depth": 18110,
             "alert": null,
@@ -272,7 +272,7 @@ window.tmp = [
         "status": null,
         "work": 0,
         "length": 9.055,
-        "type": "1",
+        "type": "e3885e80",
         "data": {
             "depth": 18110,
             "alert": null,
@@ -283,7 +283,7 @@ window.tmp = [
         "status": null,
         "work": 0,
         "length": 9.055,
-        "type": "1",
+        "type": "e3885e80",
         "data": {
             "depth": 18110,
             "alert": null,

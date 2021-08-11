@@ -2,12 +2,12 @@ import * as d3 from '../../utils/d3Lib';
 import {Scene} from "../Scene";
 import {YAxis} from "../../systems/yAxis";
 import {elementsConfig} from "../../utils/elementsConfig";
-import {getColor} from "../../../interpolateColor";
 import {RenderSystem} from "../../systems/RenderSystem";
 import {BrushSystem} from "../../systems/BrushSystem";
 import mainElementSvg from '../../../../img/icons/test.svg';
+import arrowLeft from '../../../../img/icons/arrow-left.svg';
 import {drawRectangle} from "../../utils/drawElement";
-import {SELECT_COLOR, TYPE_K} from "../../../../index";
+import {HOVER_COLOR, SELECT_COLOR, TYPE_K} from "../../../../index";
 import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
 
 
@@ -16,33 +16,38 @@ export class Context extends Scene {
     elementsData;
     visibleElements;
     selectedElement;
+
+    handleClick;
+
     hoverline;
     bisect = d3.bisector(d => d.position);
+
+    maximalWidth;
+    isBrushGoing = false;
 
     constructor(container) {
         super(container);
     }
 
-    init({totalLength, minimalLength, data}) {
+    init({totalLength, minimalLength, maximalWidth, data}) {
 
-        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE);
-
+        this.maximalWidth = maximalWidth;
         this.elementsData = data;
         this.visibleElements = data;
 
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
 
-        this.#appendElementsImages();
-        this.#initYAxis();
-        this.#initBrush();
-        this.#initMouseEvents();
-        this.#initRenderFunction();
+        this._appendElementsImages();
+        this._initYAxis();
+        this._initBrush();
+        this._initMouseEvents();
+        this._initRenderFunction();
 
         this.render();
     }
 
-    #appendElementsImages() {
+    _appendElementsImages() {
 
         const defs = this.svg.append('defs');
 
@@ -53,7 +58,7 @@ export class Context extends Scene {
         });
     }
 
-    #initYAxis() {
+    _initYAxis() {
 
         const endPosition = this.getTotalLength();
 
@@ -63,14 +68,19 @@ export class Context extends Scene {
         });
     }
 
-    #initBrush() {
+    _initBrush() {
 
         this.brushSystem = new BrushSystem({
             svg: this.svg,
             yConverter: this.yAxis.y,
-            onBrushEnd: ({selection}) => {
+            onBrushStart: () => {
+                this.tooltip.hide();
+                this.tooltip.removeHoverColor();
+                this.hoverline.classList.remove('active');
+                this.render()
+            },
+            onBrushEnd: ({selection, sourceEvent}) => {
                 if (selection) {
-
                     const {
                         convertedSelection,
                         selectionDifference
@@ -82,6 +92,12 @@ export class Context extends Scene {
 
                     this.brushSystem.clearBrush();
                 }
+                if (sourceEvent) {
+                    this._renderTooltipAndHoverine(sourceEvent);
+                    this.tooltip.show();
+                    this.hoverline.classList.add('active');
+                }
+
             }
         });
 
@@ -91,22 +107,21 @@ export class Context extends Scene {
         });
     }
 
-    #initMouseEvents() {
+    _initMouseEvents() {
 
         this.hoverline = document.querySelector('#hover-line');
 
         this.svg
             .on('mouseover', () => {
-
-                this.tooltip.show();
-                this.hoverline.classList.add('active');
+                if (!this.isBrushGoing) {
+                    this.tooltip.show();
+                    this.hoverline.classList.add('active');
+                }
             })
             .on('mousemove', (e) => {
-
-                this.#renderTooltipAndHoverine(e);
+                this._renderTooltipAndHoverine(e);
             })
             .on('mouseout', () => {
-
                 this.tooltip.hide();
                 this.tooltip.removeHoverColor();
                 this.hoverline.classList.remove('active');
@@ -115,31 +130,66 @@ export class Context extends Scene {
             .on('wheel', (e) => {
                 e.preventDefault();
 
-                const {deltaY} = e;
+                let {deltaY} = e;
+               deltaY = deltaY < 0 ? -53 : 53;
+
                 const renderWhileWheeling = setInterval(() => {
-                    this.#renderTooltipAndHoverine(e);
+                    this._renderTooltipAndHoverine(e);
                 }, 25);
 
                 setTimeout(() => {
                     clearInterval(renderWhileWheeling);
-                }, 200);
+                }, 300);
 
-                const newTopBorder = this.yAxis.y.invert(e.clientY) + deltaY;
+
+                const newTopBorder = this.yAxis.y.invert(e.offsetY) + deltaY;
 
                 if (newTopBorder > this.totalLength) {
-                    this.externalEvent(this.totalLength - this.yAxis.y.invert(e.clientY))
+                    this.externalEvent(this.totalLength);
                 } else if (newTopBorder < -50) {
                     return false;
                 } else {
-                    this.externalEvent(deltaY)
+                    this.externalEvent(deltaY);
                 }
+
+                this._renderTooltipAndHoverine(e);
             })
+            .on('click', (e) => {
+                const elementCoords = this._getCordsAndIndex(e);
+                !elementCoords
+                    ? this.handleClick(null)
+                    : this.handleClick({...this.elementsData[elementCoords.index], index: elementCoords.index - 1});
+
+            })
+            .on('touch', null);
     }
 
-    #renderTooltipAndHoverine(e) {
+    _renderTooltipAndHoverine(e) {
+        const elementCoords = this._getCordsAndIndex(e);
 
+        if (!elementCoords) {
+            return undefined
+        }
+
+        const {currentY, index} = elementCoords;
+
+        const {clientX, clientY} = e;
+
+        this.hoverline.style.transform = `translateY(${currentY}px)`;
+
+        this.tooltip.setContent({
+            content: Scheme2D.getTooltip(index - 1),
+            element: this.elementsData[index]
+        });
+
+        this.tooltip.setPosition(clientX, clientY);
+
+        this.render()
+    }
+
+    _getCordsAndIndex(e) {
         let {x, y} = this.svg.node().getBoundingClientRect()
-        let {clientX: currentX, clientY: currentY} = e;
+        let {clientX: currentX = 0, clientY: currentY = 0} = e;
 
         currentX -= x;
         currentY -= y;
@@ -152,20 +202,15 @@ export class Context extends Scene {
 
         const index = this.bisect.left(this.elementsData, hoveringMeter) - 1;
 
-        this.hoverline.style.transform = `translateY(${currentY}px)`;
-
-        this.tooltip.setContent({
-            content: Scheme2D.getTooltip(index - 1),
-            element: this.elementsData[index]
-        });
-
-        this.tooltip.setPosition(currentX, currentY);
-
-        this.render()
+        return {
+            currentX,
+            currentY,
+            index
+        }
     }
 
 
-    #initRenderFunction() {
+    _initRenderFunction() {
 
         const renderSystem = new RenderSystem({
             y: this.yAxis.y,
@@ -187,9 +232,10 @@ export class Context extends Scene {
 
                         svgElement
                             .attr('xlink:href', mainElementSvg)
-                            .attr('class', renderSystem.selector);
+                            .attr('class', renderSystem.selector)
 
-                        context.#setSVGElementPosition({svgElement, elementData, index});
+
+                        context._setSVGElementPosition({svgElement, elementData, index});
 
                     } else if (elementData.type === TYPE_K) {
 
@@ -198,14 +244,21 @@ export class Context extends Scene {
 
                         const drawElement = svgGroup.append('path');
 
-                        context.#setDrawElementPosition({elementData, drawElement, svgGroup, index});
+                        context._setDrawElementPosition({elementData, drawElement, svgGroup, index});
 
                     } else {
 
-                        const svgElement = d3.select(this).append('svg');
+
+                        const group = d3.select(this).append('g')
+                            .attr('class', renderSystem.selector);
+                        const svgElement = group.append('svg');
+
+                        if (elementData.select) {
+                            context.addIndicator(group, elementData)
+                        }
 
                         svgElement
-                            .attr('class', renderSystem.selector)
+
                             .attr('stroke', 'black')
                             .attr('viewBox', d => {
                                 const els = elementsConfig.find(el => el.id === d.type);
@@ -216,7 +269,7 @@ export class Context extends Scene {
 
                         svgElement.append('use').attr('href', d => `#${d.type}`)
 
-                        context.#setSVGElementPosition({svgElement, elementData, index});
+                        context._setSVGElementPosition({svgElement, elementData, index});
 
                         elementData.status && appendWarningIcon({
                             element: svgElement,
@@ -225,13 +278,9 @@ export class Context extends Scene {
                             position: elementData.position
                         })
                     }
-
-
                 });
-
             },
             update: (update) => {
-
 
                 update.each(function (elementData, index) {
 
@@ -240,13 +289,20 @@ export class Context extends Scene {
                         const svgGroup = d3.select(this);
                         const drawElement = svgGroup.select('path');
 
-                        context.#setDrawElementPosition({elementData, drawElement, svgGroup, index})
+                        context._setDrawElementPosition({elementData, drawElement, svgGroup, index})
 
                     } else {
+                        const group = d3.select(this);
+                        let svgElement = group;
+                        if (elementData.id !== 'main-element') {
+                            svgElement = svgElement.select('svg');
+                        }
 
-                        const svgElement = d3.select(this);
+                        context._setSVGElementPosition({svgElement, elementData, index});
 
-                        context.#setSVGElementPosition({svgElement, elementData, index});
+                        if (elementData.select) {
+                            context.addIndicator(group, elementData)
+                        }
 
                         elementData.status && appendWarningIcon({
                             element: svgElement,
@@ -264,7 +320,7 @@ export class Context extends Scene {
         this.render = () => renderSystem.renderElements(this.visibleElements);
     }
 
-    #setSVGElementPosition({svgElement, elementData, index}) {
+    _setSVGElementPosition({svgElement, elementData}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
@@ -274,14 +330,15 @@ export class Context extends Scene {
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 2) - (interpolatedHeight / 2))
             .attr('y', this.yAxis.y(elementData.position))
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : elementData.color);
+            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color)
+
     }
 
-    #setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
+    _setDrawElementPosition({drawElement, elementData, svgGroup, index}) {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
-        const interpolatedWidth = this.yAxis.y(elementData.width + startAxisPosition);
+        const interpolatedWidth = this.yAxis.y(this.maximalWidth + startAxisPosition);
 
 
         drawElement.attr('d', drawRectangle({
@@ -291,25 +348,33 @@ export class Context extends Scene {
             height: interpolatedHeight
         }))
             .attr('stroke', 'black')
-            .attr('fill', elementData.hovered ? 'yellow' : elementData.select ? SELECT_COLOR : getColor(index));
+            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color)
+            .style('stroke-width', '0.02rem');
 
         elementData.status && appendWarningIconToDrawingElement({
             element: svgGroup,
             status: elementData.status,
-            width: interpolatedWidth / 2,
-            x: (this.width / 2) - (elementData.width / 1.5),
+            width: interpolatedWidth,
+            x: (this.width / 2) - (interpolatedWidth / 2),
             y: this.yAxis.y(elementData.position) + elementData.height
         })
     }
 
     changeContextArea = (boundaries) => {
 
-        this.yAxis.updateY(boundaries[1], boundaries[0]);
-        this.#getElementFromRange(boundaries);
+        if (boundaries) {
+            this.isBrushGoing = true;
+            this.yAxis.updateY(boundaries[1], boundaries[0]);
+            this._getElementFromRange(boundaries);
+        } else {
+            if (this.isBrushGoing) {
+                this.isBrushGoing = false;
+            }
+        }
         this.render();
     }
 
-    #getElementFromRange(boundaries) {
+    _getElementFromRange(boundaries) {
 
         let leftPos = this.bisect.center(this.elementsData, boundaries[0]);
         const rightPos = this.bisect.right(this.elementsData, boundaries[1]);
@@ -325,10 +390,9 @@ export class Context extends Scene {
         return this.visibleElements[0];
     }
 
-    updateData({data, minimalLength, totalLength}) {
+    updateData({data, minimalLength, totalLength, maximalWidth}) {
 
-        minimalLength < this.MAIN_ELEMENT_SIZE && (minimalLength = this.MAIN_ELEMENT_SIZE);
-
+        this.maximalWidth = maximalWidth;
         this.setTotalLength(totalLength);
         this.setMinMaxSelection({min: minimalLength});
 
@@ -343,21 +407,28 @@ export class Context extends Scene {
     }
 
     updateColor({index, color}) {
-        const element = this.elementsData[index];
+        const element = this.elementsData[index + 1];
         element.color = color;
+        this.render();
     }
 
-    selectElement(id) {
-
+    selectElement(index, selectionLength) {
         try {
-
-            this.selectedElement && (this.selectedElement.select = false);
-            this.selectedElement = this.elementsData.find(el => el.id === id);
+            this.selectedElement && this.deselectElement();
+            this.selectedElement = this.elementsData[index + 1];
             this.selectedElement.select = true;
 
             const {position} = this.selectedElement;
 
-            this.externalEvent([position, position + this.minBrushSelection]);
+            this.isBrushGoing = true;
+
+            if (position + (selectionLength / 2) > this.totalLength) {
+                this.externalEvent([this.totalLength - selectionLength, this.totalLength]);
+            } else if (position - (selectionLength / 2) < -50) {
+                this.externalEvent([-50, -50 + selectionLength]);
+            } else {
+                this.externalEvent([position - (selectionLength / 2), position + (selectionLength / 2)]);
+            }
 
         } catch (e) {
             alert('Выбранный элемент не найден')
@@ -368,6 +439,24 @@ export class Context extends Scene {
         this.selectedElement.select = false;
         this.selectedElement = null;
         this.render();
+    }
+
+    addIndicator(group, elementData) {
+        const startAxisPosition = this.yAxis.getStartPosition();
+        const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
+        const indicator = group.select('.indicator');
+        indicator.node() && indicator.remove();
+
+
+        group
+            .append('image')
+            .attr('class', 'indicator')
+            .attr('xlink:href', arrowLeft)
+            .attr('width', interpolatedHeight)
+            .attr('height', interpolatedHeight)
+            .attr('x', (this.width / 1.5))
+            .attr('y', this.yAxis.y(elementData.position))
+
     }
 
 }

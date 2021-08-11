@@ -9,11 +9,13 @@
 
 #d3-module-container {
     display: flex;
-
 }
 
 #tooltip-context {
-    position: absolute;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 10000;
 }
 
 #hover-line {
@@ -22,6 +24,7 @@
     display: none;
     pointer-events: none;
     width: 100%;
+    z-index: 10000;
 }
 
 #hover-line.active {

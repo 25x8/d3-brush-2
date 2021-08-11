@@ -4,6 +4,7 @@ export class YAxis {
     y;
     svg;
     axis;
+    axisG;
 
     constructor({svg, endPosition, startPosition= 0,delta = 0}) {
         const height = svg.attr('height');
@@ -16,12 +17,18 @@ export class YAxis {
 
     resize({height, delta= 0}) {
         this.y.range([height - delta, delta]);
-        this.axis && this.axis.call(d3.axisLeft(this.y));
+        if(this.axisG) {
+            this.axis = d3.axisLeft(this.y);
+            this.axisG.call(this.axis);
+        }
     }
 
     update = (endPosition, startPosition= 0) => {
         this.y.domain([endPosition, startPosition]);
-        this.axis && this.axis.call(d3.axisLeft(this.y));
+        if(this.axisG) {
+            this.axis = d3.axisLeft(this.y);
+            this.axisG.call(this.axis);
+        }
     }
 
     updateY = (endPosition, startPosition= 0) => {
@@ -29,11 +36,15 @@ export class YAxis {
     }
 
     appendYline(position) {
-        this.axis = this.svg
+
+        this.axis = d3.axisLeft(this.y);
+        this.axisG = this.svg
             .append('g')
             .attr('class', 'd3-module-y-axis')
             .attr('transform', `translate(${position}, 0)`)
-            .call(d3.axisLeft(this.y));
+            .call(this.axis);
+
+
     }
 
     getStartPosition() {

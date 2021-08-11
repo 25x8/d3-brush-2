@@ -6,11 +6,12 @@ export class BrushSystem {
     brush;
     yConverter;
     defaultSelection;
-    currentSelection;
+    currentSelection = [];
     minSelection;
     maxSelection;
+    defaultSelectionDiff;
 
-    constructor({svg, delta = 0, yConverter, onBrush, onBrushEnd}) {
+    constructor({svg, delta = 0, yConverter, onBrushStart, onBrush, onBrushEnd}) {
 
         const width = svg.attr('width');
         const height = svg.attr('height');
@@ -19,6 +20,7 @@ export class BrushSystem {
 
         this.brushArea = d3.brushY()
             .extent([[0, delta], [width, height - delta]])
+            .on('start', onBrushStart)
             .on('brush', onBrush)
             .on('end', onBrushEnd);
 
@@ -31,14 +33,12 @@ export class BrushSystem {
     }
 
     resize({width, height, delta = 0}) {
-
         this.defaultSelection = [delta, height - delta];
         this.brushArea.extent([[0, delta], [width, height - delta]]);
         this.brush.call(this.brushArea);
-
     }
 
-    moveBrush(boundaries) {
+    moveBrush(boundaries,) {
 
         if (boundaries) {
 
@@ -51,21 +51,34 @@ export class BrushSystem {
                 .call(this.brushArea.move, this.getCurrentSelection());
 
         } else {
-            try {
-                this.brush
-                    .call(this.brushArea.move, this.getCurrentSelection())
-            } catch (e) {
-                this.moveBrushToDefault()
-            }
+            this.brush
+                .call(this.brushArea.move, this.getCurrentSelection())
         }
     }
 
     moveBrushToDefault() {
-        this.brush.call(this.brushArea.move, this.getDefaultSelection());
+        try {
+            this.brush.call(this.brushArea.move, this.getDefaultSelection());
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     clearBrush() {
         this.brush.call(this.brushArea.clear);
+    }
+
+    checkCurrentSelection() {
+
+        const selectionDifference = this.getCurrentSelectionDifference()
+        const {selectionDifference: defaultSelectionDifference} = this.getSelectionDifference(this.getDefaultSelection());
+
+        const defaultOverLength = selectionDifference - defaultSelectionDifference;
+
+        if(defaultOverLength > 0) {
+            this.currentSelection[1] -= defaultOverLength;
+        }
+
     }
 
     setCurrentSelection(selection) {
@@ -82,10 +95,17 @@ export class BrushSystem {
     }
 
     setSelectionFromWheel(deltaY) {
+        const absDeltaY = Math.abs(deltaY);
+        const selectionDiff = this.currentSelection[1] - this.currentSelection[0];
+        const step = (selectionDiff / (absDeltaY * 2)) * absDeltaY;
+
+        deltaY < 0
+            ? deltaY = -step
+            : deltaY = step;
 
         this.currentSelection = this.currentSelection.map(el => el + deltaY);
 
-        if(this.currentSelection[0] < -this.minSelection) {
+        if (this.currentSelection[0] < -this.minSelection) {
 
             const {selectionDifference} = this.getSelectionDifference(this.getCurrentSelection());
 
@@ -93,9 +113,9 @@ export class BrushSystem {
             this.currentSelection[1] = -this.minSelection + selectionDifference;
         }
 
-        if(this.currentSelection[1] > this.maxSelection) {
+        if (this.currentSelection[1] > this.maxSelection) {
 
-            const {selectionDifference} = this.getSelectionDifference(this.getCurrentSelection());
+            const selectionDifference = this.getCurrentSelectionDifference();
 
             this.currentSelection[0] = this.maxSelection - selectionDifference;
             this.currentSelection[1] = this.maxSelection;
@@ -103,7 +123,9 @@ export class BrushSystem {
     }
 
     getCurrentSelection() {
-        return this.currentSelection.map(this.yConverter);
+        return this.currentSelection
+            ? this.currentSelection.map(this.yConverter)
+            : [];
     }
 
     getDefaultSelection() {
@@ -118,5 +140,9 @@ export class BrushSystem {
             convertedSelection,
             selectionDifference: convertedSelection.reduce((a, b) => b - a)
         };
+    }
+
+    getCurrentSelectionDifference() {
+        return this.currentSelection[1] - this.currentSelection[0];
     }
 }

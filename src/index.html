@@ -9,8 +9,24 @@
 <div id="main-scene"></div>
 </body>
 <script>
+
+    const p = []
+    for(let i = 0; i < 111; i++) {
+        p.push({
+            "id": "c579e3a0-6545-11ea-8e5a-55a2532bb9c9" + i,
+            "status": null,
+            "work": 0,
+            "length": 12,
+            "type": "1",
+            "data": {
+                "depth": 552355,
+                "alert": null,
+                "alert_text": null,
+            }
+        })
+    }
     Scheme2D.init({
-        data: [],
+        data: p,
         // data: [],
         element: "#main-scene",
         mode: "work",
@@ -18,8 +34,8 @@
             text: "main test"
         },
         size: {
-            width: 120,
-            height: 391
+            width: 212 ,
+            height: 476
         },
         fnTooltipItem: (data, mode) => `id: ${data.id}<br>val: ${data[mode]}`,
         fnTooltipMain: (data) => `<i>MAIN</i>: ${data.text}`,

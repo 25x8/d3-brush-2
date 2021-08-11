@@ -1,4 +1,4 @@
-import './temp-style.css';
+import './styles.css';
 import {Context} from "./scene/context/Context";
 import {Focus} from "./scene/focus/Focus";
 import {
@@ -7,6 +7,8 @@ import {
     appendAllElementsToContainer
 } from "./utils/elementsTools";
 import Tooltip from "./Tooltip/tooltip";
+import {elementsConfig} from "./utils/elementsConfig";
+import {TYPE_K} from "../../index";
 
 export class D3Module {
     FOCUS_WIDTH = 50;
@@ -20,12 +22,15 @@ export class D3Module {
     context;
     focus;
 
-    initScene({selector, width, height, data}) {
-        this.#createHTMLScenes({selector, width, height});
-        this.#createSVGScenes(data, width);
-        this.#createTooltip();
-        this.#linkScenes();
+    initScene({selector, width, height, data, onClick}) {
+        this._calculateAspectInSvgElements();
+        this._addWidthInSvgElements(data);
+        this._createHTMLScenes({selector, width, height});
+        this._createSVGScenes(data, width);
+        this._createTooltip();
+        this._linkScenes();
         this.moveBrushToDefault();
+        this._addClickEventOnContext(onClick)
     }
 
     resizeScene({width, height}) {
@@ -36,7 +41,7 @@ export class D3Module {
         this.focus.resize({
             height,
             width: this.FOCUS_WIDTH,
-            delta: 10
+            data: this.context.elementsData
         }, width - this.FOCUS_WIDTH);
 
         this.context.resize({
@@ -46,29 +51,35 @@ export class D3Module {
     }
 
     updateData(data) {
-
+        this._addWidthInSvgElements(data);
         const updatedLengthAndData = calculateElementsPosition({
             data,
-            height: this.moduleContainer.offsetHeight
+            height: this.moduleContainer.offsetHeight,
+            contextWidth: this.context.width
         });
 
-        this.#addMainElement(updatedLengthAndData);
+        this._addMainElement(updatedLengthAndData);
 
         this.context.updateData(updatedLengthAndData)
+
 
         this.focus.updateMarkersData({
             ...updatedLengthAndData,
             contextWidth: this.context.width
         });
+
     }
 
-    updateColor({index, color}) {
-        this.focus.updateColor({index, color});
+    updateContextColor({index, color}) {
         this.context.updateColor({index, color});
     }
 
-    selectElement(id) {
-        this.context.selectElement(id)
+    updateFocusColor() {
+        this.focus.updateColor(this.context.elementsData);
+    }
+
+    selectElement(index) {
+        this.context.selectElement(index, this.focus.brushSystem.getCurrentSelectionDifference())
     }
 
     deselectElement() {
@@ -76,7 +87,7 @@ export class D3Module {
         this.moveBrushToDefault();
     }
 
-    #createHTMLScenes({selector, width, height}) {
+    _createHTMLScenes({selector, width, height}) {
 
         this.container = selector instanceof Object
             ? selector
@@ -106,7 +117,9 @@ export class D3Module {
 
         const htmlHoverLine = createHTMLElement({name: 'hover-line'});
 
-        htmlContext.prepend(htmlHoverLine, htmlTooltip);
+        document.querySelector('body').prepend(htmlTooltip)
+
+        htmlContext.prepend(htmlHoverLine);
 
         appendAllElementsToContainer({
             container: this.moduleContainer,
@@ -115,36 +128,37 @@ export class D3Module {
 
     }
 
-    #createSVGScenes(data, width) {
+    _createSVGScenes(data, width) {
 
         const calculatedLengthAndData = calculateElementsPosition({
             data,
-            height: this.moduleContainer.offsetHeight
+            height: this.moduleContainer.offsetHeight,
+            contextWidth: width - this.FOCUS_WIDTH
         });
 
-        this.#addMainElement(calculatedLengthAndData);
+        this._addMainElement(calculatedLengthAndData);
 
-        this.#createSVGFocus({
+        this._createSVGFocus({
             ...calculatedLengthAndData,
             contextWidth: width - this.FOCUS_WIDTH
         });
-        this.#createSVGContext(calculatedLengthAndData);
+        this._createSVGContext(calculatedLengthAndData);
     }
 
-    #createSVGFocus(data) {
+    _createSVGFocus(data) {
         this.focus = new Focus(document.getElementById(this.FOCUS_SELECTOR));
         this.focus.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.focus.init(data);
     }
 
-    #createSVGContext(data) {
+    _createSVGContext(data) {
 
         this.context = new Context(document.getElementById(this.CONTEXT_SELECTOR));
         this.context.MAIN_ELEMENT_SIZE = this.MAIN_ELEMENT_SIZE;
         this.context.init(data);
     }
 
-    #createTooltip() {
+    _createTooltip() {
         this.context.tooltip = new Tooltip(`#${this.TOOLTIP_SELECTOR}`);
     }
 
@@ -154,12 +168,12 @@ export class D3Module {
         brushSystem.moveBrushToDefault();
     }
 
-    #linkScenes() {
+    _linkScenes() {
         this.focus.externalEvent = this.context.changeContextArea;
         this.context.externalEvent = this.focus.changeFocusArea
     }
 
-    #addMainElement({data}) {
+    _addMainElement({data}) {
 
         data.unshift({
             "id": "main-element",
@@ -171,6 +185,26 @@ export class D3Module {
         });
 
         return data
+    }
+
+    _addClickEventOnContext(event) {
+        this.context.handleClick = event;
+    }
+
+    _calculateAspectInSvgElements() {
+        elementsConfig.forEach(el => {
+            const [, , width, height] = el.viewBox.split(" ");
+            el.widthAspect = height / width;
+        });
+    }
+
+    _addWidthInSvgElements(data) {
+        data.forEach(el => {
+            if(el.type !== TYPE_K) {
+                el.width =
+                    el.height / elementsConfig.find(conf => conf.id === el.type).widthAspect;
+            }
+        });
     }
 
 }
