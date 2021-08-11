@@ -240,9 +240,16 @@ export class Context extends Scene {
                     } else if (elementData.type === TYPE_K) {
 
                         const svgGroup = d3.select(this).append('g');
+
+                        if (elementData.select) {
+                            context.addIndicator(svgGroup, elementData)
+                        }
+
                         svgGroup.attr('class', renderSystem.selector);
 
                         const drawElement = svgGroup.append('path');
+
+
 
                         context._setDrawElementPosition({elementData, drawElement, svgGroup, index});
 
@@ -258,8 +265,8 @@ export class Context extends Scene {
                         }
 
                         svgElement
-
                             .attr('stroke', 'black')
+                            .attr('preserveAspectRatio','none')
                             .attr('viewBox', d => {
                                 const els = elementsConfig.find(el => el.id === d.type);
                                 if (els) {
@@ -288,6 +295,10 @@ export class Context extends Scene {
 
                         const svgGroup = d3.select(this);
                         const drawElement = svgGroup.select('path');
+
+                        if (elementData.select) {
+                            context.addIndicator(svgGroup, elementData)
+                        }
 
                         context._setDrawElementPosition({elementData, drawElement, svgGroup, index})
 
@@ -324,11 +335,14 @@ export class Context extends Scene {
 
         const startAxisPosition = this.yAxis.getStartPosition();
         const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
+        const interpolatedWidth = elementData.id === 'main-element'
+            ? interpolatedHeight
+            : this.yAxis.y(elementData.width + startAxisPosition);
 
         svgElement
-            .attr('width', interpolatedHeight)
+            .attr('width', interpolatedWidth)
             .attr('height', interpolatedHeight)
-            .attr('x', (this.width / 2) - (interpolatedHeight / 2))
+            .attr('x', (this.width / 2) - (interpolatedWidth / 2))
             .attr('y', this.yAxis.y(elementData.position))
             .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color)
 
@@ -429,6 +443,7 @@ export class Context extends Scene {
             } else {
                 this.externalEvent([position - (selectionLength / 2), position + (selectionLength / 2)]);
             }
+            this.render()
 
         } catch (e) {
             alert('Выбранный элемент не найден')
@@ -443,10 +458,10 @@ export class Context extends Scene {
 
     addIndicator(group, elementData) {
         const startAxisPosition = this.yAxis.getStartPosition();
-        const interpolatedHeight = this.yAxis.y(elementData.height + startAxisPosition);
-        const indicator = group.select('.indicator');
-        indicator.node() && indicator.remove();
+        const interpolatedHeight = this.yAxis.y(10 + startAxisPosition);
+        const indicator = d3.select('.indicator');
 
+        indicator.node() && indicator.remove();
 
         group
             .append('image')
@@ -455,7 +470,8 @@ export class Context extends Scene {
             .attr('width', interpolatedHeight)
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 1.5))
-            .attr('y', this.yAxis.y(elementData.position))
+            .attr('y', this.yAxis.y(elementData.position) - (interpolatedHeight / 2));
+
 
     }
 
