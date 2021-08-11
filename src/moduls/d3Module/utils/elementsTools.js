@@ -42,7 +42,7 @@ export function calculateElementsPosition({data, height}) {
 
     // const calculatedMinZoom = calculateMinimalZoom({contextWidth, maximalWidth});
     // minimalLength = calculatedMinZoom > minimalLength ? calculatedMinZoom : minimalLength;
-    minimalLength = averageHeight;
+    minimalLength = averageHeight || 0;
 
     const maximalLength = calculateMaximumLength({minimalLength, totalLength, height});
 

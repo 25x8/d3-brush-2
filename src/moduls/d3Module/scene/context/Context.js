@@ -9,6 +9,7 @@ import arrowLeft from '../../../../img/icons/arrow-left.svg';
 import {drawRectangle} from "../../utils/drawElement";
 import {HOVER_COLOR, SELECT_COLOR, TYPE_K} from "../../../../index";
 import {appendWarningIcon, appendWarningIconToDrawingElement} from "../../utils/elementsTools";
+import star from "d3-shape/src/symbol/star";
 
 
 export class Context extends Scene {
@@ -249,8 +250,6 @@ export class Context extends Scene {
 
                         const drawElement = svgGroup.append('path');
 
-
-
                         context._setDrawElementPosition({elementData, drawElement, svgGroup, index});
 
                     } else {
@@ -344,7 +343,10 @@ export class Context extends Scene {
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 2) - (interpolatedWidth / 2))
             .attr('y', this.yAxis.y(elementData.position))
-            .attr('fill', elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color)
+            .attr('fill', () => {
+               return  elementData.id !== 'main-element'
+                ? elementData.hovered ? HOVER_COLOR : elementData.select ? SELECT_COLOR : elementData.color : null
+            })
 
     }
 
@@ -453,24 +455,30 @@ export class Context extends Scene {
     deselectElement() {
         this.selectedElement.select = false;
         this.selectedElement = null;
+        d3.select('.indicator').remove();
         this.render();
     }
 
     addIndicator(group, elementData) {
         const startAxisPosition = this.yAxis.getStartPosition();
-        const interpolatedHeight = this.yAxis.y(10 + startAxisPosition);
+        const s = this.yAxis.y((elementData.height) + startAxisPosition);
+        const interpolatedHeight = 10;
         const indicator = d3.select('.indicator');
 
         indicator.node() && indicator.remove();
 
         group
-            .append('image')
+            .append('svg')
             .attr('class', 'indicator')
             .attr('xlink:href', arrowLeft)
             .attr('width', interpolatedHeight)
             .attr('height', interpolatedHeight)
             .attr('x', (this.width / 1.5))
-            .attr('y', this.yAxis.y(elementData.position) - (interpolatedHeight / 2));
+            .attr('y', this.yAxis.y(elementData.position + 5) )
+            .attr('viewBox', '0 0 100 100')
+            .style('fill', SELECT_COLOR)
+            .append('polygon')
+            .attr('points', '0,50 100,0 100,100');
 
 
     }
