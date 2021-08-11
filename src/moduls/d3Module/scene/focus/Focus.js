@@ -42,6 +42,7 @@ export class Focus extends Scene {
     _initYAxis() {
 
         const endPosition = this.getTotalLength();
+        console.log(endPosition)
 
         this.yAxis = new YAxis({
             svg: this.svg,
@@ -212,7 +213,7 @@ export class Focus extends Scene {
                         });
                     })
                         .attr('fill', (d, index) => {
-                            return d.color || getColor(index)
+                            return d.id !== 'main-element' ? d.color || getColor(index) : 'black'
                         });
 
                     elementData.status && appendWarningIconToFocus({
@@ -276,7 +277,6 @@ export class Focus extends Scene {
     }
 
     _configureLength({minimalLength, maximalLength, totalLength}) {
-
         totalLength === 0 || totalLength < minimalLength
             ? this.setTotalLength(minimalLength + this.MAIN_ELEMENT_SIZE)
             : this.setTotalLength(totalLength)
@@ -303,6 +303,7 @@ export class Focus extends Scene {
 
     updateMarkersData({totalLength, minimalLength, maximalLength, data, maximalWidth, contextWidth}) {
 
+        console.log(totalLength)
         this.maximalWidth = maximalWidth;
 
         this._configureLength({
