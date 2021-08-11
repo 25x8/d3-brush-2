@@ -141,7 +141,8 @@ export class Context extends Scene {
                     clearInterval(renderWhileWheeling);
                 }, 300);
 
-                const newTopBorder = this.yAxis.y.invert(e.clientY) + deltaY;
+
+                const newTopBorder = this.yAxis.y.invert(e.offsetY) + deltaY;
 
                 if (newTopBorder > this.totalLength) {
                     this.externalEvent(this.totalLength);
